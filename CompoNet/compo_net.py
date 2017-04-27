@@ -1,10 +1,10 @@
-# 目前模仿char-rnn
-
 import tensorflow as tf
 import numpy as np
 from tensorflow.contrib import rnn
 from tensorflow.contrib import legacy_seq2seq
 import os.path
+import random
+
 
 class Config:
     def __init__(self, num_layers=2, rnn_size=80,
@@ -15,7 +15,7 @@ class Config:
                  log_path='log/',
                  output_dir='output/',
                  data_path='data/train.pkl',
-                 learning_rate=0.003,
+                 learning_rate=0.02,
                  decay_rate=0.97,
                  encoders=None,
                  vec_lengths=None,
@@ -42,14 +42,13 @@ class Config:
             self.restore = True
 
 
-import random
 def _sample(weights):
-    sum = 0
+    summation = 0
     rand = random.random()
-    thre = 3/len(weights)
+    threshold = 1/len(weights)
     for i in range(len(weights)):
-        sum += weights[i]
-        if weights[i] > thre and sum >= rand:
+        summation += weights[i]
+        if weights[i] > threshold and summation >= rand:
             return i
 
     return len(weights)-1
@@ -67,6 +66,10 @@ class Model:
                                      [config.batch_size,
                                       config.seq_length,
                                       self.vec_len])
+        self.targets = tf.placeholder(tf.float32,
+                                      [config.batch_size,
+                                       config.seq_length,
+                                       self.vec_len])
 
         # create rnn cells and stack them together
         cells = []
@@ -84,6 +87,8 @@ class Model:
 
         inputs = tf.split(self.inputs, config.seq_length, 1)  # [batches, 1, vec_len]*seq_length
         inputs = [tf.squeeze(_input, [1]) for _input in inputs]  # [batches, vec_len]*seq_length
+        targets = tf.split(self.targets, config.seq_length, 1)
+        targets = [tf.squeeze(_target, [1]) for _target in targets]
 
         # ???
         def loop(prev, _):
@@ -110,10 +115,10 @@ class Model:
         # loss
         loss = 0
         if config.training:
-            for i in range(config.seq_length-1):
+            for i in range(config.seq_length):
                 for j in range(config.batch_size):
-                    loss += tf.square(inputs[i+1][j] - self.probs[i][j])
-            self.cost = tf.reduce_sum(loss) / (config.seq_length-1) / config.batch_size / self.vec_len
+                    loss += tf.square(targets[i][j] - self.probs[i][j])
+            self.cost = tf.reduce_sum(loss) / config.seq_length / config.batch_size / self.vec_len
 
             # optimizer
             tvars = tf.trainable_variables()
@@ -139,7 +144,7 @@ class Model:
             output = x[0][0].tolist()
             for i in range(4):
                 tmp = output[sum(self.config.vec_lengths[:i]):
-                                       sum(self.config.vec_lengths[:i+1])]
+                             sum(self.config.vec_lengths[:i+1])]
                 indices.append(tmp.index(max(tmp)))
             note = [self.config.encoders[i].active_features_[indices[i]] for i in range(4)]
             ret.append(note)
@@ -155,18 +160,24 @@ class Model:
             indices = []
             for i in range(4):
                 tmp = output[sum(self.config.vec_lengths[:i]):
-                                       sum(self.config.vec_lengths[:i+1])]
+                             sum(self.config.vec_lengths[:i+1])]
                 indices.append(_sample(tmp))
             note = [self.config.encoders[i].active_features_[indices[i]] for i in range(4)]
             ret.append(note)
 
-            note = [self.config.encoders[i].transform(note[i]).toarray().tolist()[0] for i in range(4)]
+            note = [self.config.encoders[i].transform(note[i]).toarray().tolist()[0]
+                    for i in range(4)]
             note = sum(note, [])
 
         return ret
 
     def save(self, sess):
-        self.saver.save(sess, os.path.join(self.config.save_path, 'compo_net.sav'))
+        try:
+            pass
+        finally:
+            print('saving model')
+            self.saver.save(sess, os.path.join(self.config.save_path, 'compo_net.sav'))
+            print('saved')
 
     def restore(self, sess):
         self.saver.restore(sess, os.path.join(self.config.save_path, 'compo_net.sav'))

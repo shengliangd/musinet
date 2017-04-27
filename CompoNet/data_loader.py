@@ -6,6 +6,7 @@ import numpy as np
 import sklearn.externals.joblib as joblib
 import os.path
 
+
 class Loader:
     """
         load data and create encoders for four channels
@@ -66,42 +67,46 @@ class Loader:
         self.rhythms = self.rhythm_encoder.transform(self.rhythms).toarray().tolist()
         self.durations = self.duration_encoder.transform(self.durations).toarray().tolist()
 
-        self.dataset = []
+        dataset = []
         for i in range(len(self.pitches)):
-            self.dataset.append(self.pitches[i]+
-                                 self.dynamics[i]+
-                                 self.rhythms[i]+
-                                 self.durations[i])
+            dataset.append(self.pitches[i] +
+                           self.dynamics[i] +
+                           self.rhythms[i] +
+                           self.durations[i])
 
         config.vec_lengths = [len(self.pitches[0]),
-                          len(self.dynamics[0]),
-                          len(self.rhythms[0]),
-                          len(self.durations[0])]
+                              len(self.dynamics[0]),
+                              len(self.rhythms[0]),
+                              len(self.durations[0])]
 
         config.encoders = [self.pitch_encoder,
                            self.dynamic_encoder,
                            self.rhythm_encoder,
                            self.duration_encoder]
 
-        self.num_batches = len(self.dataset) // config.seq_length
+        self.num_batches = len(dataset) // config.seq_length
         print(':: dataset contains {:d} notes, ie. {:d} batches'
-              .format(len(self.dataset), self.num_batches)
-              , file=stderr)
+              .format(len(dataset), self.num_batches),
+              file=stderr)
         self.pointer = 0
+
+        self.inputs = dataset
+        self.targets = [dataset[-1]] + dataset[:-1]
 
     def reset_pointer(self):
         self.pointer = 0
 
     def get_next_batch(self):
-        ret = []
+        ret = ([], [])
         for i in range(self.config.batch_size):
-            ret.append(self.dataset[self.pointer:(self.pointer+self.config.seq_length)])
+            ret[0].append(self.inputs[self.pointer:(self.pointer+self.config.seq_length)])
+            ret[1].append(self.targets[self.pointer:(self.pointer+self.config.seq_length)])
             self.pointer += self.config.seq_length
-            if self.pointer+self.config.seq_length >= len(self.dataset):
+            if self.pointer+self.config.seq_length >= len(self.inputs):
                 self.pointer = 0
         return ret
 
-    def get_sequence(self, length=None):
+    def get_sequence(self, length=1024):
         if length is None:
-            return self.dataset
-        return self.dataset[:length]
+            return self.inputs[0]
+        return self.inputs[:length]
