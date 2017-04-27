@@ -7,9 +7,9 @@ import random
 
 
 class Config:
-    def __init__(self, num_layers=2, rnn_size=80,
-                 seq_length=64,
-                 training=True, batch_size=4,
+    def __init__(self, num_layers=3, rnn_size=128,
+                 seq_length=256,
+                 training=True, batch_size=3,
                  grad_clip=5,
                  save_path='save/',
                  log_path='log/',
@@ -45,7 +45,7 @@ class Config:
 def _sample(weights):
     summation = 0
     rand = random.random()
-    threshold = 1/len(weights)
+    threshold = 5/len(weights)
     for i in range(len(weights)):
         summation += weights[i]
         if weights[i] > threshold and summation >= rand:

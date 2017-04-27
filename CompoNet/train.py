@@ -9,7 +9,7 @@ import compo_net
 import data_loader
 
 if __name__ == '__main__':
-    config = compo_net.Config(training=True, restore=True, learning_rate=0.01)
+    config = compo_net.Config(training=True, restore=False, learning_rate=0.01)
     loader = data_loader.Loader(config)
     model = compo_net.Model(config)
     sess = tf.Session()
