@@ -4,28 +4,25 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.contrib import rnn
 from tensorflow.contrib import legacy_seq2seq
-
-from sys import stderr
-
+import os.path
 
 class Config:
-    def __init__(self, num_layers=2, rnn_size=64,
-                 seq_length=32, num_channels=4,
+    def __init__(self, num_layers=2, rnn_size=80,
+                 seq_length=64,
                  training=True, batch_size=4,
                  grad_clip=5,
-                 save_path='save/save',
-                 log_path='log/log',
+                 save_path='save/',
+                 log_path='log/',
                  output_dir='output/',
                  data_path='data/train.pkl',
-                 input_keep_prob=1,
-                 output_keep_prob=1,
-                 learning_rate=0.001,
+                 learning_rate=0.003,
                  decay_rate=0.97,
+                 encoders=None,
+                 vec_lengths=None,
                  restore=True):
         self.num_layers = num_layers
         self.rnn_size = rnn_size
         self.seq_length = seq_length
-        self.num_channels = num_channels
         self.training = training
         self.batch_size = batch_size
         self.grad_clip = grad_clip
@@ -34,25 +31,42 @@ class Config:
         self.restore = restore
         self.output_dir = output_dir
         self.data_path = data_path
-        self.input_keep_prob = input_keep_prob
-        self.output_keep_prob = output_keep_prob
         self.learning_rate = learning_rate
         self.decay_rate = decay_rate  # not in use now
+        self.encoders = encoders
+        self.vec_lengths = vec_lengths
+
         if not training:
             self.batch_size = 1
             self.seq_length = 1
             self.restore = True
 
 
+import random
+def _sample(weights):
+    sum = 0
+    rand = random.random()
+    thre = 3/len(weights)
+    for i in range(len(weights)):
+        sum += weights[i]
+        if weights[i] > thre and sum >= rand:
+            return i
+
+    return len(weights)-1
+
+
 class Model:
     # build the computing graph
     def __init__(self, config=Config()):
+        assert config.vec_lengths is not None, "invalid config"
+
         self.config = config
+        self.vec_len = sum(config.vec_lengths)
         # input placeholder
         self.inputs = tf.placeholder(tf.float32,
                                      [config.batch_size,
                                       config.seq_length,
-                                      config.num_channels])
+                                      self.vec_len])
 
         # create rnn cells and stack them together
         cells = []
@@ -62,43 +76,44 @@ class Model:
         self.cell = rnn.MultiRNNCell(cells, state_is_tuple=True)
 
         # process input for rnn, along with output converter
-        ''' don't convert input for now
-        w_input = tf.Variable(tf.truncated_normal([config.num_channels, config.rnn_size], stddev=0.1),
-                              trainable=True)
-        b_input = tf.Variable(tf.truncated_normal([config.rnn_size], stddev=0.1),
-                              trainable=True)
-        '''
-        w_output = tf.Variable(tf.truncated_normal([config.rnn_size, config.num_channels],
-                                                   stddev=0.1),
+        w_output = tf.Variable(tf.truncated_normal([config.rnn_size, self.vec_len],
+                                                   stddev=1/(config.rnn_size**0.5)),
                                trainable=True)
-        b_output = tf.Variable(tf.truncated_normal([config.num_channels], stddev=0.1),
+        b_output = tf.Variable(tf.truncated_normal([self.vec_len], stddev=1),
                                trainable=True)
 
-        inputs = tf.split(self.inputs, config.seq_length, 1)  # [batches, 1, num_channels]*seq_length
-        inputs = [tf.squeeze(_input, [1]) for _input in inputs]  # [batches, num_channels]*seq_length
-        cell_inputs = inputs
+        inputs = tf.split(self.inputs, config.seq_length, 1)  # [batches, 1, vec_len]*seq_length
+        inputs = [tf.squeeze(_input, [1]) for _input in inputs]  # [batches, vec_len]*seq_length
 
+        # ???
         def loop(prev, _):
-            return tf.matmul(prev, w_output)+b_output
-#            return prev
+            return prev
 
         # state and output
         self.init_state = self.cell.zero_state(config.batch_size, tf.float32)
-        cell_outputs, self.final_state = legacy_seq2seq.rnn_decoder(cell_inputs,
-                                                                    self.init_state,
-                                                                    self.cell,
-                                                                    loop_function=None if config.training else loop)
-        # self.cell_output: [batches, rnn_size]*seq_length
-        # now need to convert cell_output to proper vector
-        self.outputs = [(tf.matmul(_output, w_output)+b_output) for _output in cell_outputs]  #[batches, channels]*seq_length
+        outputs, self.final_state = legacy_seq2seq.rnn_decoder(inputs,
+                                                               self.init_state,
+                                                               self.cell,
+                                                               loop_function=None if config.training else loop)
+
+        # [batch_size, rnn_size]*seq_length -> [batch_size, vec_length]*seq_length
+        outputs = [tf.matmul(_output, w_output)+b_output for _output in outputs]
+        self.probs = []
+        for elem in outputs:
+            slices = []
+            for i in range(4):
+                _slice = tf.slice(elem, [0, sum(config.vec_lengths[:i])], [-1, config.vec_lengths[i]])
+                _slice = tf.nn.softmax(_slice)
+                slices.append(_slice)
+            self.probs.append(tf.concat(slices, 1))
 
         # loss
         loss = 0
         if config.training:
             for i in range(config.seq_length-1):
                 for j in range(config.batch_size):
-                    loss += tf.square(inputs[i+1][j] - self.outputs[i][j])
-            self.cost = tf.reduce_sum(loss) / (config.seq_length-1) / config.batch_size / config.num_channels
+                    loss += tf.square(inputs[i+1][j] - self.probs[i][j])
+            self.cost = tf.reduce_sum(loss) / (config.seq_length-1) / config.batch_size / self.vec_len
 
             # optimizer
             tvars = tf.trainable_variables()
@@ -113,25 +128,45 @@ class Model:
     def sample(self, sess, init_seq, final_len=1024):
         state = sess.run(self.cell.zero_state(1, tf.float32))
 
+        ret = []
         for note in init_seq[:-1]:
-            x = np.zeros((1, 1, self.config.num_channels))
+            x = np.zeros((1, 1, self.vec_len))
             x[0][0] = note
             feed = {self.inputs: x, self.init_state: state}
             [state] = sess.run([self.final_state], feed)
 
-        ret = init_seq
+            indices = []
+            output = x[0][0].tolist()
+            for i in range(4):
+                tmp = output[sum(self.config.vec_lengths[:i]):
+                                       sum(self.config.vec_lengths[:i+1])]
+                indices.append(tmp.index(max(tmp)))
+            note = [self.config.encoders[i].active_features_[indices[i]] for i in range(4)]
+            ret.append(note)
+
         note = init_seq[-1]
         for _ in range(final_len-len(init_seq)):
-            x = np.zeros((1, 1, self.config.num_channels))
+            x = np.zeros((1, 1, self.vec_len))
             x[0, 0] = note
             feed = {self.inputs: x, self.init_state: state}
-            [outputs, state] = sess.run([self.outputs, self.final_state], feed)
-            ret += outputs[0].tolist()
-            note = outputs[0].tolist()[0]
+            [outputs, state] = sess.run([self.probs, self.final_state], feed)
+            output = outputs[0].tolist()[0]
+
+            indices = []
+            for i in range(4):
+                tmp = output[sum(self.config.vec_lengths[:i]):
+                                       sum(self.config.vec_lengths[:i+1])]
+                indices.append(_sample(tmp))
+            note = [self.config.encoders[i].active_features_[indices[i]] for i in range(4)]
+            ret.append(note)
+
+            note = [self.config.encoders[i].transform(note[i]).toarray().tolist()[0] for i in range(4)]
+            note = sum(note, [])
+
         return ret
 
     def save(self, sess):
-        self.saver.save(sess, self.config.save_path)
+        self.saver.save(sess, os.path.join(self.config.save_path, 'compo_net.sav'))
 
     def restore(self, sess):
-        self.saver.restore(sess, self.config.save_path)
+        self.saver.restore(sess, os.path.join(self.config.save_path, 'compo_net.sav'))

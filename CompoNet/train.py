@@ -9,7 +9,7 @@ import compo_net
 import data_loader
 
 if __name__ == '__main__':
-    config = compo_net.Config(training=True, restore=True, learning_rate=100000, batch_size=1)
+    config = compo_net.Config(training=True, restore=True)
     loader = data_loader.Loader(config)
     model = compo_net.Model(config)
     sess = tf.Session()
@@ -20,27 +20,27 @@ if __name__ == '__main__':
         model.restore(sess)
 
     loader.reset_pointer()
-    i = 0
+    times = 1
     cost = 0
     while True:
         try:
             data = loader.get_next_batch()
-            [_cost, _] = sess.run([model.cost, model.train], {model.inputs: data[0]})
+            [_cost, _] = sess.run([model.cost, model.train], {model.inputs: data})
             cost += _cost
-            if i % loader.num_batches == 0:
-                print('epochs: %d, cost: %.8f' % (i/loader.num_batches, cost/loader.num_batches))
+            if times % loader.num_batches == 0:
+                print('epoch: %d, cost: %.8f' % (times / loader.num_batches, cost / loader.num_batches))
                 cost = 0
-            if i % 1000 == 0 and i != 0:
+            if times % 1000 == 0:
                 print('saving model')
                 model.save(sess)
                 print('saved')
-            i += 1
+            times += 1
         except KeyboardInterrupt:
             cmd = input('Operation(w/q/c/l):')
             if 'w' == cmd:
                 model.save(sess)
             if 'q' == cmd:
                 exit()
-            if 'l' == cmd:
+            if 'l' == cmd:  # change learning rate, not implemented yet
                 tmp = input()
             continue

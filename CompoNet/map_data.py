@@ -7,11 +7,13 @@ epsl = 1e-2
 
 
 def map_pitch(x):
-    return x
+    return max(x, 0)
 
 
 def unmap_pitch(x):
-    return int(x)
+    if x == 0:
+        return -2147483648
+    return x
 
 
 def map_dynamic(x):
@@ -19,23 +21,23 @@ def map_dynamic(x):
 
 
 def unmap_dynamic(x):
-    return int(x)
+    return x
 
 
 def map_rhythm(x):
-    return x
+    return int(x*1e4)
 
 
 def unmap_rhythm(x):
-    return x
+    return x/1e4
 
 
 def map_duration(x):
-    return x
+    return int(x*1e4)
 
 
 def unmap_duration(x):
-    return x
+    return x/1e4
 
 
 '''
@@ -68,7 +70,7 @@ def unmap_dynamic(x):
 def map_rhythm(x):
     if x == 0:
         return 0.0
-    return math.log2(x*200)/math.log2(800)
+    return min(1, math.log2(x*200)/math.log2(800))
 
 
 def unmap_rhythm(x):
@@ -80,16 +82,15 @@ def unmap_rhythm(x):
 def map_duration(x):
     if x == 0:
         return 0.0
-    return math.log2(x*50)/math.log2(500)
+    return min(math.log2(x*50)/math.log2(500), 1)
 
 
 def unmap_duration(x):
     if x < epsl:
         return 0
     return (500**x)/50
-'''
 
-'''
+
 def map_pitch(x):
     x = x-20
     x = max(x, 0)

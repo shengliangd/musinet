@@ -8,7 +8,7 @@ import os.path
 import map_data as nm
 
 if __name__ == '__main__':
-    config = compo_net.Config(training=False, restore=True,
+    config = compo_net.Config(training=False,
                               data_path='output/input.pkl')
 
     loader = data_loader.Loader(config)
@@ -21,11 +21,11 @@ if __name__ == '__main__':
 
     model.restore(sess)
 
-    inp = loader.get_sequence(length=600)
+    inp = loader.get_sequence(length=4)
 
     with open(os.path.join(config.output_dir, 'output.pkl'), 'wb+') as file:
-        #output = model.sample(sess, inp, final_len=1024)
-        output = inp
+        output = model.sample(sess, inp, final_len=1024)
+        #output = inp
         for i in range(len(output)):
             output[i][0] = nm.unmap_pitch(output[i][0])
             output[i][1] = nm.unmap_dynamic(output[i][1])
