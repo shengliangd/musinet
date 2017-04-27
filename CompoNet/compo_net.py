@@ -85,8 +85,8 @@ class Model:
         b_output = tf.Variable(tf.truncated_normal([self.vec_len], stddev=1),
                                trainable=True)
 
-        inputs = tf.split(self.inputs, config.seq_length, 1)  # [batches, 1, vec_len]*seq_length
-        inputs = [tf.squeeze(_input, [1]) for _input in inputs]  # [batches, vec_len]*seq_length
+        inputs = tf.split(self.inputs, config.seq_length, 1)  # [batch_size, 1, vec_len]*seq_length
+        inputs = [tf.squeeze(_input, [1]) for _input in inputs]  # [batch_size, vec_len]*seq_length
         targets = tf.split(self.targets, config.seq_length, 1)
         targets = [tf.squeeze(_target, [1]) for _target in targets]
 
@@ -112,13 +112,12 @@ class Model:
                 slices.append(_slice)
             self.probs.append(tf.concat(slices, 1))
 
-        # loss
-        loss = 0
         if config.training:
-            for i in range(config.seq_length):
-                for j in range(config.batch_size):
-                    loss += tf.square(targets[i][j] - self.probs[i][j])
-            self.cost = tf.reduce_sum(loss) / config.seq_length / config.batch_size / self.vec_len
+            loss = 0
+            if config.training:
+                for i in range(config.seq_length):
+                        loss += targets[i]*tf.log(self.probs[i])
+                self.cost = -tf.reduce_sum(loss) / config.seq_length / config.batch_size / self.vec_len
 
             # optimizer
             tvars = tf.trainable_variables()

@@ -91,7 +91,7 @@ class Loader:
         self.pointer = 0
 
         self.inputs = dataset
-        self.targets = [dataset[-1]] + dataset[:-1]
+        self.targets = dataset[1:] + [dataset[0]]
 
     def reset_pointer(self):
         self.pointer = 0

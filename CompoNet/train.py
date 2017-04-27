@@ -9,10 +9,10 @@ import compo_net
 import data_loader
 
 if __name__ == '__main__':
-    config = compo_net.Config(training=True, restore=True, learning_rate=0.05)
+    config = compo_net.Config(training=True, restore=True, learning_rate=0.01)
     loader = data_loader.Loader(config)
     model = compo_net.Model(config)
-    sess = tf.Session() 
+    sess = tf.Session()
 #    sess.run(tf.variables_initializer(model.variables))  # fail to initialize rnn weights
     sess.run(tf.global_variables_initializer())
 
@@ -34,8 +34,8 @@ if __name__ == '__main__':
             '''
             if times % 1000 == 0:
                 model.save(sess)
-            times += 1
             '''
+            times += 1
         except KeyboardInterrupt:
             cmd = input('Operation(w/q/c/l):')
             if 'w' == cmd:
