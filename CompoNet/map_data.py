@@ -3,7 +3,7 @@
 import math
 
 
-epsl = 1e-2
+epsl = 1e-4
 
 
 def map_pitch(x):

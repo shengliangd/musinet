@@ -5,7 +5,7 @@ import map_data as mp
 import numpy as np
 import sklearn.externals.joblib as joblib
 import os.path
-
+import random
 
 class Loader:
     """
@@ -62,51 +62,47 @@ class Loader:
              self.duration_encoder] = joblib.load(os.path.join(config.save_path, 'encoders.sav'))
             pass
 
-        self.pitches = self.pitch_encoder.transform(self.pitches).toarray().tolist()
-        self.dynamics = self.dynamic_encoder.transform(self.dynamics).toarray().tolist()
-        self.rhythms = self.rhythm_encoder.transform(self.rhythms).toarray().tolist()
-        self.durations = self.duration_encoder.transform(self.durations).toarray().tolist()
-
-        dataset = []
-        for i in range(len(self.pitches)):
-            dataset.append(self.pitches[i] +
-                           self.dynamics[i] +
-                           self.rhythms[i] +
-                           self.durations[i])
-
-        config.vec_lengths = [len(self.pitches[0]),
-                              len(self.dynamics[0]),
-                              len(self.rhythms[0]),
-                              len(self.durations[0])]
+        config.vec_lengths = [len(self.pitch_encoder.active_features_),
+                              len(self.dynamic_encoder.active_features_),
+                              len(self.rhythm_encoder.active_features_),
+                              len(self.duration_encoder.active_features_)]
 
         config.encoders = [self.pitch_encoder,
                            self.dynamic_encoder,
                            self.rhythm_encoder,
                            self.duration_encoder]
 
-        self.num_batches = len(dataset) // config.seq_length
+        self.num_batches = len(self.pitches) // config.seq_length
         print(':: dataset contains {:d} notes, ie. {:d} batches'
-              .format(len(dataset), self.num_batches),
+              .format(len(self.pitches), self.num_batches),
               file=stderr)
-        self.pointer = 0
 
-        self.inputs = dataset
-        self.targets = dataset[1:] + [dataset[0]]
-
-    def reset_pointer(self):
-        self.pointer = 0
+    def convert(self, pointer, length):
+        pitches = self.pitch_encoder.transform(self.pitches[pointer:(pointer + length + 1)]).toarray().tolist()
+        dynamics = self.dynamic_encoder.transform(self.dynamics[pointer:(pointer + length + 1)]).toarray().tolist()
+        rhythms = self.rhythm_encoder.transform(self.rhythms[pointer:(pointer + length + 1)]).toarray().tolist()
+        durations = self.duration_encoder.transform(self.durations[pointer:(pointer + length + 1)]).toarray().tolist()
+        return pitches, dynamics, rhythms, durations
 
     def get_next_batch(self):
         ret = ([], [])
         for i in range(self.config.batch_size):
-            ret[0].append(self.inputs[self.pointer:(self.pointer+self.config.seq_length)])
-            ret[1].append(self.targets[self.pointer:(self.pointer+self.config.seq_length)])
-            self.pointer += self.config.seq_length
-            if self.pointer+self.config.seq_length >= len(self.inputs):
-                self.pointer = 0
+            pointer = random.randint(0, len(self.pitches) - self.config.seq_length-1)
+            ret[0].append([])
+            ret[1].append([])
+
+            pitches, dynamics, rhythms, durations = self.convert(pointer, self.config.seq_length)
+            for j in range(self.config.seq_length):
+                ret[0][i].append(pitches[j] + dynamics[j] + rhythms[j] + durations[j])
+                ret[1][i].append(pitches[j+1] + dynamics[j+1] + rhythms[j+1] + durations[j+1])
         return ret
 
     def get_sequence(self, length=1024):
-        if length is None:
-            return self.inputs[0]
-        return self.inputs[:length]
+        pointer = random.randint(0, len(self.pitches) - length)
+        pitches, dynamics, rhythms, durations = self.convert(pointer, length)
+
+        ret = []
+        for i in range(length):
+            ret.append(pitches[i] + dynamics[i] + rhythms[i] + durations[i])
+
+        return ret

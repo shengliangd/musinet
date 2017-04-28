@@ -7,18 +7,20 @@ import random
 
 
 class Config:
-    def __init__(self, num_layers=3, rnn_size=128,
-                 seq_length=256,
-                 training=True, batch_size=3,
+    def __init__(self, num_layers=2, rnn_size=128,
+                 seq_length=32,
+                 training=True, batch_size=4,
                  grad_clip=5,
                  save_path='save/',
                  log_path='log/',
                  output_dir='output/',
                  data_path='data/train.pkl',
                  learning_rate=0.02,
-                 decay_rate=0.97,
+                 input_keep_prob=0.95,
+                 output_keep_prob=0.95,
                  encoders=None,
                  vec_lengths=None,
+
                  restore=True):
         self.num_layers = num_layers
         self.rnn_size = rnn_size
@@ -32,9 +34,10 @@ class Config:
         self.output_dir = output_dir
         self.data_path = data_path
         self.learning_rate = learning_rate
-        self.decay_rate = decay_rate  # not in use now
         self.encoders = encoders
         self.vec_lengths = vec_lengths
+        self.input_keep_prob = input_keep_prob
+        self.output_keep_prob = output_keep_prob
 
         if not training:
             self.batch_size = 1
@@ -43,13 +46,20 @@ class Config:
 
 
 def _sample(weights):
-    summation = 0
-    rand = random.random()
-    threshold = 5/len(weights)
+    threshold = 0.5/len(weights)
+
+    total = 0
     for i in range(len(weights)):
-        summation += weights[i]
-        if weights[i] > threshold and summation >= rand:
-            return i
+        if weights[i] > threshold:
+            total += weights[i]
+
+    rand = random.random()*total
+    summation = 0
+    for i in range(len(weights)):
+        if weights[i] > threshold:
+            summation += weights[i]
+            if summation >= rand:
+                return i
 
     return len(weights)-1
 
@@ -75,6 +85,9 @@ class Model:
         cells = []
         for _ in range(config.num_layers):
             cell = rnn.BasicLSTMCell(config.rnn_size)  # don't dropout for now
+            cell = rnn.DropoutWrapper(cell,
+                                      config.input_keep_prob,
+                                      config.output_keep_prob)
             cells.append(cell)
         self.cell = rnn.MultiRNNCell(cells, state_is_tuple=True)
 
@@ -90,16 +103,12 @@ class Model:
         targets = tf.split(self.targets, config.seq_length, 1)
         targets = [tf.squeeze(_target, [1]) for _target in targets]
 
-        # ???
-        def loop(prev, _):
-            return prev
-
         # state and output
         self.init_state = self.cell.zero_state(config.batch_size, tf.float32)
         outputs, self.final_state = legacy_seq2seq.rnn_decoder(inputs,
                                                                self.init_state,
                                                                self.cell,
-                                                               loop_function=None if config.training else loop)
+                                                               loop_function=None)
 
         # [batch_size, rnn_size]*seq_length -> [batch_size, vec_length]*seq_length
         outputs = [tf.matmul(_output, w_output)+b_output for _output in outputs]
@@ -114,9 +123,16 @@ class Model:
 
         if config.training:
             loss = 0
-            if config.training:
-                for i in range(config.seq_length):
-                        loss += targets[i]*tf.log(self.probs[i])
+
+            # loss will be weighted
+            weights = tf.reshape(tf.constant([[0.333]*config.vec_lengths[0] +
+                                           [0.333]*config.vec_lengths[1] +
+                                           [1]*config.vec_lengths[2] +
+                                           [1]*config.vec_lengths[3]]), [-1, 1])
+            for i in range(config.seq_length):
+                for j in range(config.batch_size):
+                    loss += tf.matmul([targets[i][j]*tf.log(self.probs[i][j])],
+                                      weights)
                 self.cost = -tf.reduce_sum(loss) / config.seq_length / config.batch_size / self.vec_len
 
             # optimizer
