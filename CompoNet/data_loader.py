@@ -8,10 +8,6 @@ import os.path
 import random
 
 class Loader:
-    """
-        load data and create encoders for four channels
-    """
-
     def __init__(self, config):
         self.config = config
 

@@ -15,9 +15,9 @@ class Config:
                  log_path='log/',
                  output_dir='output/',
                  data_path='data/train.pkl',
-                 learning_rate=0.02,
-                 input_keep_prob=0.95,
-                 output_keep_prob=0.95,
+                 learning_rate=0.001,
+                 input_keep_prob=1,
+                 output_keep_prob=1,
                  encoders=None,
                  vec_lengths=None,
 
@@ -125,14 +125,15 @@ class Model:
             loss = 0
 
             # loss will be weighted
+            '''
             weights = tf.reshape(tf.constant([[0.333]*config.vec_lengths[0] +
                                            [0.333]*config.vec_lengths[1] +
                                            [1]*config.vec_lengths[2] +
                                            [1]*config.vec_lengths[3]]), [-1, 1])
+            '''
             for i in range(config.seq_length):
                 for j in range(config.batch_size):
-                    loss += tf.matmul([targets[i][j]*tf.log(self.probs[i][j])],
-                                      weights)
+                    loss += targets[i][j]*tf.log(self.probs[i][j])
                 self.cost = -tf.reduce_sum(loss) / config.seq_length / config.batch_size / self.vec_len
 
             # optimizer
