@@ -8,7 +8,7 @@ import random
 
 class Config:
     def __init__(self, num_layers=2, rnn_size=128,
-                 seq_length=32,
+                 seq_length=4,
                  training=True, batch_size=4,
                  grad_clip=5,
                  save_path='save/',
@@ -46,18 +46,18 @@ class Config:
 
 
 def _sample(weights):
-
-    threshold = 3/len(weights)
+    threshold_high = 1 * max(weights)+0.1
+    threshold_low = 1/len(weights)
 
     total = 0
     for i in range(len(weights)):
-        if weights[i] > threshold:
+        if threshold_high > weights[i] > threshold_low:
             total += weights[i]
 
     rand = random.random()*total
     summation = 0
     for i in range(len(weights)):
-        if weights[i] > threshold:
+        if threshold_high > weights[i] > threshold_low:
             summation += weights[i]
             if summation >= rand:
                 return i

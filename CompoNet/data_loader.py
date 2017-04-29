@@ -29,6 +29,11 @@ class Loader:
                     print(':: loading finished', file=stderr)
                     break
 
+        self.pitches.append(self.pitches[0])
+        self.dynamics.append(self.dynamics[0])
+        self.rhythms.append(self.rhythms[0])
+        self.durations.append(self.durations[0])
+
         self.pitches = np.array(self.pitches).reshape(-1, 1)
         self.dynamics = np.array(self.dynamics).reshape(-1, 1)
         self.rhythms = np.array(self.rhythms).reshape(-1, 1)
@@ -68,6 +73,7 @@ class Loader:
                            self.rhythm_encoder,
                            self.duration_encoder]
 
+        self.pointer = 0
         self.num_batches = len(self.pitches) // config.seq_length
         print(':: dataset contains {:d} notes, ie. {:d} batches'
               .format(len(self.pitches), self.num_batches),
@@ -83,7 +89,7 @@ class Loader:
     def get_next_batch(self):
         ret = ([], [])
         for i in range(self.config.batch_size):
-            pointer = random.randint(0, len(self.pitches) - self.config.seq_length-1)
+            pointer = self.pointer
             ret[0].append([])
             ret[1].append([])
 
@@ -91,10 +97,14 @@ class Loader:
             for j in range(self.config.seq_length):
                 ret[0][i].append(pitches[j] + dynamics[j] + rhythms[j] + durations[j])
                 ret[1][i].append(pitches[j+1] + dynamics[j+1] + rhythms[j+1] + durations[j+1])
+            self.pointer += self.config.seq_length
+            if self.pointer >= len(self.pitches) - self.config.seq_length:
+                self.pointer = 0
         return ret
 
     def get_sequence(self, length=1024):
-        pointer = random.randint(0, len(self.pitches) - length)
+        # pointer = random.randint(0, len(self.pitches) - length)
+        pointer = 0
         pitches, dynamics, rhythms, durations = self.convert(pointer, length)
 
         ret = []

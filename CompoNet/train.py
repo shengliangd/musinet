@@ -34,7 +34,7 @@ if __name__ == '__main__':
             if cost != cost:
                 print(':: cost is nan, abort')
                 exit(-1)
-            if times % 10 == 0:
+            if times % loader.num_batches == 0:
                 print('epoch: %d, cost: %.8f' % (times / loader.num_batches, cost / 10))
                 cost = 0
             if times % 3000 == 0:
