@@ -1,12 +1,12 @@
 #!/bin/bash
 
-[ ! -d ../pkl ] && mkdir ../pkl
+ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
 
-cd xmlpkl
+[ ! -d $ROOT_DIR/pkl ] && mkdir $ROOT_DIR/pkl
 
-for fname in `ls ../../seq`
+for fname in `ls $ROOT_DIR/seq`
 do
     name=`echo $fname|cut -d . -f 1`.pkl
-    ./xml2pkl.py ../../seq/$fname ../../pkl/$name
+    $ROOT_DIR/tool-chain/xmlpkl/xml2pkl.py $ROOT_DIR/seq/$fname $ROOT_DIR/pkl/$name
     echo $fname
 done

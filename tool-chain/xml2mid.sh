@@ -1,11 +1,12 @@
 #!/bin/bash
 
-# I mean, mid sequentialized
-[ ! -d ../mid_seq/ ] && mkdir ../mid_seq
+ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
 
-cd jmusic
-for fname in `ls ../../seq/`
+# I mean, mid sequentialized
+[ ! -d $ROOT_DIR/mid_seq/ ] && mkdir $ROOT_DIR/mid_seq
+
+for fname in `ls $ROOT_DIR/seq/`
 do
     name=`echo $fname|cut -d . -f 1`.mid
-    ./deprocess ../../seq/$fname ../../mid_seq/$name
+    $ROOT_DIR/tool-chain/jmusic/deprocess $ROOT_DIR/seq/$fname $ROOT_DIR/mid_seq/$name
 done
