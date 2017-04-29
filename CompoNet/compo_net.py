@@ -46,7 +46,8 @@ class Config:
 
 
 def _sample(weights):
-    threshold = 0.5/len(weights)
+
+    threshold = 3/len(weights)
 
     total = 0
     for i in range(len(weights)):
