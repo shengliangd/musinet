@@ -1,10 +1,11 @@
 #!/bin/bash
 
-[ ! -d ../xml/ ] && mkdir ../xml
+ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
 
-cd jmusic
-for fname in `ls ../../mid/`
+[ ! -d $ROOT_DIR/xml/ ] && mkdir $ROOT_DIR/xml
+
+for fname in `ls $ROOT_DIR/mid/`
 do
     name=`echo $fname|cut -d . -f 1`.xml
-    ./process ../../mid/$fname ../../xml/$name
+    $ROOT_DIR/tool-chain/jmusic/process $ROOT_DIR/mid/$fname $ROOT_DIR/xml/$name
 done
