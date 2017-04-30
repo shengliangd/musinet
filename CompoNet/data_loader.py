@@ -89,7 +89,7 @@ class Loader:
     def get_next_batch(self):
         ret = ([], [])
         for i in range(self.config.batch_size):
-            pointer = self.pointer
+            pointer = random.randint(0, len(self.pitches) - self.config.seq_length - 1)
             ret[0].append([])
             ret[1].append([])
 
@@ -97,14 +97,11 @@ class Loader:
             for j in range(self.config.seq_length):
                 ret[0][i].append(pitches[j] + dynamics[j] + rhythms[j] + durations[j])
                 ret[1][i].append(pitches[j+1] + dynamics[j+1] + rhythms[j+1] + durations[j+1])
-            self.pointer += self.config.seq_length
-            if self.pointer >= len(self.pitches) - self.config.seq_length:
-                self.pointer = 0
         return ret
 
-    def get_sequence(self, length=1024):
-        # pointer = random.randint(0, len(self.pitches) - length)
-        pointer = 0
+    def get_sequence(self, pointer=None, length=1024):
+        if pointer is None:
+            pointer = random.randint(0, len(self.pitches) - length)
         pitches, dynamics, rhythms, durations = self.convert(pointer, length)
 
         ret = []
