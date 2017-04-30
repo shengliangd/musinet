@@ -46,7 +46,7 @@ class Config:
 
 
 def _sample(weights):
-    threshold_high = 1 * max(weights)+0.1
+    threshold_high = 1
     threshold_low = 1/len(weights)
 
     total = 0
