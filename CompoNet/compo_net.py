@@ -8,7 +8,7 @@ import random
 
 class Config:
     def __init__(self, num_layers=2, rnn_size=128,
-                 seq_length=4,
+                 seq_length=32,
                  training=True, batch_size=4,
                  grad_clip=5,
                  save_dir='save/',
