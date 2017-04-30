@@ -11,8 +11,8 @@ class Config:
                  seq_length=4,
                  training=True, batch_size=4,
                  grad_clip=5,
-                 save_path='save/',
-                 log_path='log/',
+                 save_dir='save/',
+                 log_dir='log/',
                  output_dir='output/',
                  data_path='data/train.pkl',
                  learning_rate=0.001,
@@ -28,8 +28,8 @@ class Config:
         self.training = training
         self.batch_size = batch_size
         self.grad_clip = grad_clip
-        self.save_path = save_path
-        self.log_path = log_path
+        self.save_dir = save_dir
+        self.log_dir = log_dir
         self.restore = restore
         self.output_dir = output_dir
         self.data_path = data_path
@@ -51,13 +51,13 @@ def _sample(weights):
 
     total = 0
     for i in range(len(weights)):
-        if threshold_high > weights[i] > threshold_low:
+        if threshold_high > weights[i] and weights[i] > threshold_low:
             total += weights[i]
 
     rand = random.random()*total
     summation = 0
     for i in range(len(weights)):
-        if threshold_high > weights[i] > threshold_low:
+        if threshold_high > weights[i] and weights[i] > threshold_low:
             summation += weights[i]
             if summation >= rand:
                 return i
@@ -68,81 +68,87 @@ def _sample(weights):
 class Model:
     # build the computing graph
     def __init__(self, config=Config()):
-        assert config.vec_lengths is not None, "invalid config"
-
         self.config = config
         self.vec_len = sum(config.vec_lengths)
+
         # input placeholder
-        self.inputs = tf.placeholder(tf.float32,
-                                     [config.batch_size,
-                                      config.seq_length,
-                                      self.vec_len])
-        self.targets = tf.placeholder(tf.float32,
-                                      [config.batch_size,
-                                       config.seq_length,
-                                       self.vec_len])
+        with tf.name_scope('inputs'):
+            self.inputs = tf.placeholder(tf.float32,
+                                         [config.batch_size,
+                                          config.seq_length,
+                                          self.vec_len])
+
+            inputs = tf.split(self.inputs, config.seq_length, 1)  # [batch_size, 1, vec_len]*seq_length
+            inputs = [tf.squeeze(_input, [1]) for _input in inputs]  # [batch_size, vec_len]*seq_length
+
+        with tf.name_scope('targets'):
+            self.targets = tf.placeholder(tf.float32,
+                                          [config.batch_size,
+                                           config.seq_length,
+                                           self.vec_len])
+            targets = tf.split(self.targets, config.seq_length, 1)
+            targets = [tf.squeeze(_target, [1]) for _target in targets]
 
         # create rnn cells and stack them together
-        cells = []
-        for _ in range(config.num_layers):
-            cell = rnn.BasicLSTMCell(config.rnn_size)  # don't dropout for now
-            cell = rnn.DropoutWrapper(cell,
-                                      config.input_keep_prob,
-                                      config.output_keep_prob)
-            cells.append(cell)
-        self.cell = rnn.MultiRNNCell(cells, state_is_tuple=True)
+        with tf.name_scope('lstm_cells'):
+            cells = []
+            for _ in range(config.num_layers):
+                cell = rnn.BasicLSTMCell(config.rnn_size)  # don't dropout for now
+                cell = rnn.DropoutWrapper(cell,
+                                          config.input_keep_prob,
+                                          config.output_keep_prob)
+                cells.append(cell)
+            self.cell = rnn.MultiRNNCell(cells, state_is_tuple=True)
 
-        # process input for rnn, along with output converter
-        w_output = tf.Variable(tf.truncated_normal([config.rnn_size, self.vec_len],
-                                                   stddev=1/(config.rnn_size**0.5)),
-                               trainable=True)
-        b_output = tf.Variable(tf.truncated_normal([self.vec_len], stddev=1),
-                               trainable=True)
+            w_output = tf.Variable(tf.truncated_normal([config.rnn_size, self.vec_len],
+                                                       stddev=1/(config.rnn_size**0.5)),
+                                   trainable=True)
+            b_output = tf.Variable(tf.truncated_normal([self.vec_len], stddev=1),
+                                   trainable=True)
 
-        inputs = tf.split(self.inputs, config.seq_length, 1)  # [batch_size, 1, vec_len]*seq_length
-        inputs = [tf.squeeze(_input, [1]) for _input in inputs]  # [batch_size, vec_len]*seq_length
-        targets = tf.split(self.targets, config.seq_length, 1)
-        targets = [tf.squeeze(_target, [1]) for _target in targets]
+            # state and output
+            self.init_state = self.cell.zero_state(config.batch_size, tf.float32)
+            outputs, self.final_state = legacy_seq2seq.rnn_decoder(inputs,
+                                                                   self.init_state,
+                                                                   self.cell,
+                                                                   loop_function=None)
 
-        # state and output
-        self.init_state = self.cell.zero_state(config.batch_size, tf.float32)
-        outputs, self.final_state = legacy_seq2seq.rnn_decoder(inputs,
-                                                               self.init_state,
-                                                               self.cell,
-                                                               loop_function=None)
+            # [batch_size, rnn_size]*seq_length -> [batch_size, vec_length]*seq_length
+            outputs = [tf.matmul(_output, w_output)+b_output for _output in outputs]
 
-        # [batch_size, rnn_size]*seq_length -> [batch_size, vec_length]*seq_length
-        outputs = [tf.matmul(_output, w_output)+b_output for _output in outputs]
-        self.probs = []
-        for elem in outputs:
-            slices = []
-            for i in range(4):
-                _slice = tf.slice(elem, [0, sum(config.vec_lengths[:i])], [-1, config.vec_lengths[i]])
-                _slice = tf.nn.softmax(_slice)
-                slices.append(_slice)
-            self.probs.append(tf.concat(slices, 1))
+        with tf.name_scope('outputs'):
+            self.probs = []
+            for elem in outputs:
+                slices = []
+                for i in range(4):
+                    _slice = tf.slice(elem, [0, sum(config.vec_lengths[:i])], [-1, config.vec_lengths[i]])
+                    _slice = tf.nn.softmax(_slice)
+                    slices.append(_slice)
+                self.probs.append(tf.concat(slices, 1))
 
         if config.training:
-            loss = 0
+            with tf.name_scope('loss'):
+                loss = 0
 
-            # loss will be weighted
-            '''
-            weights = tf.reshape(tf.constant([[0.333]*config.vec_lengths[0] +
-                                           [0.333]*config.vec_lengths[1] +
-                                           [1]*config.vec_lengths[2] +
-                                           [1]*config.vec_lengths[3]]), [-1, 1])
-            '''
-            for i in range(config.seq_length):
-                for j in range(config.batch_size):
-                    loss += targets[i][j]*tf.log(self.probs[i][j])
-                self.cost = -tf.reduce_sum(loss) / config.seq_length / config.batch_size / self.vec_len
+                # loss will be weighted
+                '''
+                weights = tf.reshape(tf.constant([[0.333]*config.vec_lengths[0] +
+                                               [0.333]*config.vec_lengths[1] +
+                                               [1]*config.vec_lengths[2] +
+                                               [1]*config.vec_lengths[3]]), [-1, 1])
+                '''
+                for i in range(config.seq_length):
+                    for j in range(config.batch_size):
+                        loss += targets[i][j]*tf.log(self.probs[i][j])
+                    self.cost = -tf.reduce_sum(loss) / config.seq_length / config.batch_size / self.vec_len
 
             # optimizer
-            tvars = tf.trainable_variables()
-            grads, _ = tf.clip_by_global_norm(tf.gradients(self.cost, tvars),
-                                              config.grad_clip)
-            optimizer = tf.train.AdamOptimizer(learning_rate=config.learning_rate)
-            self.train = optimizer.apply_gradients(zip(grads, tvars))
+            with tf.name_scope('optimizer'):
+                tvars = tf.trainable_variables()
+                grads, _ = tf.clip_by_global_norm(tf.gradients(self.cost, tvars),
+                                                  config.grad_clip)
+                optimizer = tf.train.AdamOptimizer(learning_rate=config.learning_rate)
+                self.train = optimizer.apply_gradients(zip(grads, tvars))
 
         # saver
         self.saver = tf.train.Saver(tf.global_variables())
@@ -193,8 +199,8 @@ class Model:
             pass
         finally:
             print('saving model')
-            self.saver.save(sess, os.path.join(self.config.save_path, 'compo_net.sav'))
+            self.saver.save(sess, os.path.join(self.config.save_dir, 'compo_net.sav'))
             print('saved')
 
     def restore(self, sess):
-        self.saver.restore(sess, os.path.join(self.config.save_path, 'compo_net.sav'))
+        self.saver.restore(sess, os.path.join(self.config.save_dir, 'compo_net.sav'))

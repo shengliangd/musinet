@@ -54,13 +54,13 @@ class Loader:
                          self.dynamic_encoder,
                          self.rhythm_encoder,
                          self.duration_encoder],
-                        os.path.join(config.save_path, 'encoders.sav'))
+                        os.path.join(config.save_dir, 'encoders.sav'))
         else:
             # load saved encoder
             [self.pitch_encoder,
              self.dynamic_encoder,
              self.rhythm_encoder,
-             self.duration_encoder] = joblib.load(os.path.join(config.save_path, 'encoders.sav'))
+             self.duration_encoder] = joblib.load(os.path.join(config.save_dir, 'encoders.sav'))
             pass
 
         config.vec_lengths = [len(self.pitch_encoder.active_features_),

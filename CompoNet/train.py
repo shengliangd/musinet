@@ -10,14 +10,16 @@ import os
 
 if __name__ == '__main__':
     config = compo_net.Config(training=True, learning_rate=0.001)
-    config.restore = bool(os.listdir(config.save_path))
+    config.restore = bool(os.listdir(config.save_dir))
     if config.restore:
         print('restore from saved model')
 
     loader = data_loader.Loader(config)
     model = compo_net.Model(config)
+    merged_summary = tf.summary.merge_all()
     sess = tf.Session()
-#    sess.run(tf.variables_initializer(model.variables))  # fail to initialize rnn weights
+    summary_writer = tf.summary.FileWriter(config.log_dir, sess.graph)
+
     sess.run(tf.global_variables_initializer())
 
     if config.restore:
