@@ -9,7 +9,7 @@ import data_loader
 import os
 
 if __name__ == '__main__':
-    config = compo_net.Config(training=True, learning_rate=0.002)
+    config = compo_net.Config(training=True, learning_rate=0.0002)
     config.restore = bool(os.listdir(config.save_dir))
     if config.restore:
         print('restore from saved model')
@@ -36,11 +36,10 @@ if __name__ == '__main__':
             if cost != cost:
                 print(':: cost is nan, abort')
                 exit(-1)
-#            if times % loader.num_batches == 0:
-            print('epoch: %d, cost: %.8f' % (times / loader.num_batches, cost / 1))
-            cost = 0
-            if times % 3000 == 0:
-                model.save(sess)
+            if times % loader.num_batches == 0:
+                print('epoch average cost: %.8f' % (cost / loader.num_batches))
+                cost = 0
+            print('epoch: %d, cost: %.8f' % (times / loader.num_batches, _cost))
             times += 1
         except KeyboardInterrupt:
             cmd = input('Operation(w/q/c/l):')
