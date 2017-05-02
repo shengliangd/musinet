@@ -9,7 +9,7 @@ import data_loader
 import os
 
 if __name__ == '__main__':
-    config = compo_net.Config(training=True, learning_rate=0.0002)
+    config = compo_net.Config(training=True, learning_rate=0.002)
     config.restore = bool(os.listdir(config.save_dir))
     if config.restore:
         print('restore from saved model')

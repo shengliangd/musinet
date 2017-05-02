@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
     model.restore(sess)
 
-    inp = loader.get_sequence(pointer=0, length=4)
+    inp = loader.get_sequence(pointer=0, length=20)
 
     with open(os.path.join(config.output_dir, 'output.pkl'), 'wb+') as file:
         output = model.sample(sess, inp, final_len=1024)
