@@ -144,10 +144,11 @@ class Model:
 
             # optimizer
             with tf.name_scope('optimizer'):
+                self.learning_rate = tf.placeholder(tf.float32, [])
                 tvars = tf.trainable_variables()
                 grads, _ = tf.clip_by_global_norm(tf.gradients(self.cost, tvars),
                                                   config.grad_clip)
-                optimizer = tf.train.AdamOptimizer(learning_rate=config.learning_rate)
+                optimizer = tf.train.AdamOptimizer(learning_rate= self.learning_rate)
                 self.train = optimizer.apply_gradients(zip(grads, tvars))
 
         # saver

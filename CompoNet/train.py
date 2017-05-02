@@ -9,10 +9,10 @@ import data_loader
 import os
 
 if __name__ == '__main__':
-    config = compo_net.Config(training=True, learning_rate=0.0002)
-    config.restore = bool(os.listdir(config.save_dir))
+    config = compo_net.Config(training=True, learning_rate=0.002)
+    config.restore = os.path.exists(os.path.join(config.save_dir, 'checkpoint'))
     if config.restore:
-        print('restore from saved model')
+        print(':: restore from saved model')
 
     loader = data_loader.Loader(config)
     model = compo_net.Model(config)
@@ -31,7 +31,7 @@ if __name__ == '__main__':
         try:
             inputs, targets = loader.get_next_batch()
 
-            [_cost, _] = sess.run([model.cost, model.train], {model.inputs: inputs, model.targets: targets})
+            [_cost, _] = sess.run([model.cost, model.train], {model.inputs: inputs, model.targets: targets, model.learning_rate: config.learning_rate})
             cost += _cost
             if cost != cost:
                 print(':: cost is nan, abort')
@@ -48,5 +48,11 @@ if __name__ == '__main__':
             if 'q' == cmd:
                 exit()
             if 'l' == cmd:  # change learning rate, not implemented yet
-                print('not implemented yet')
+                print('current learning rate: %.8f' % config.learning_rate)
+                try:
+                    tmp = float(input('input new learning rate:'))
+                except ValueError:
+                    print(':: invalid value')
+                else:
+                    config.learning_rate = tmp
             continue
