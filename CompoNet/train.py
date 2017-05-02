@@ -36,9 +36,9 @@ if __name__ == '__main__':
             if cost != cost:
                 print(':: cost is nan, abort')
                 exit(-1)
-            if times % loader.num_batches == 0:
-                print('epoch: %d, cost: %.8f' % (times / loader.num_batches, cost / loader.num_batches))
-                cost = 0
+#            if times % loader.num_batches == 0:
+            print('epoch: %d, cost: %.8f' % (times / loader.num_batches, cost / 1))
+            cost = 0
             if times % 3000 == 0:
                 model.save(sess)
             times += 1
