@@ -9,7 +9,7 @@ def xml_copy_attr(dst, src, attr_name):
     if tmp != '':
         dst.setAttribute(attr_name, tmp)
 
-def xml2seq2(infile, outfile):
+def xml2seq(infile, outfile):
     dom = xml.dom.minidom.parse(infile)
     new_dom = xml.dom.minidom.Document()
 

@@ -1,16 +1,9 @@
-#!/usr/bin/python3
-
-from sys import argv
 import six.moves.cPickle as pickle
 import xml.dom.minidom
 
-if __name__ == '__main__':
-    if len(argv) != 3:
-        print("Usage: %s infile outfile" % argv[0])
-        exit(-1)
-    
-    dom = xml.dom.minidom.parse(argv[1])
-    output = open(argv[2], 'wb+')
+def xml2pkl(infile, outfile):
+    dom = xml.dom.minidom.parse(infile)
+    output = open(outfile, 'wb+')
 
     raw_parts = []
 
@@ -52,3 +45,31 @@ if __name__ == '__main__':
         raw_parts.append([instrument, raw_notes])
 
     pickle.dump(raw_parts, output)
+
+def pkl2xml(infile, outfile):
+    dom = xml.dom.minidom.Document()
+    
+    score = dom.createElement('Score')
+    dom.appendChild(score)
+    
+    part = dom.createElement('Part')
+    score.appendChild(part)
+    
+    phrase = dom.createElement('Phrase')
+    part.appendChild(phrase)
+    
+    with open(infile, 'rb') as file:
+        while True:
+            try:
+                for tmp in pkl.load(file)[1]:
+                    note = dom.createElement('Note')
+                    note.setAttribute('pitch', str(tmp[0]))
+                    note.setAttribute('dynamic', str(tmp[1]))
+                    note.setAttribute('rhythmValue', str(tmp[2]))
+                    note.setAttribute('duration', str(tmp[3]))
+    
+                    phrase.appendChild(note)
+            except EOFError:
+                break
+    
+    dom.writexml(open(outfile, 'w'), encoding='UTF-8')
