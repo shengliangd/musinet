@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import value_net
 import data_loader
 import config

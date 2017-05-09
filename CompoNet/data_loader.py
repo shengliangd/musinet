@@ -20,12 +20,12 @@ class Loader:
         with open(config.data_path, 'rb') as file:
             while True:
                 try:
-                    for data in pkl.load(file):
-                        for i in range(len(data[1])):
-                            self.pitches.append(mp.map_pitch(data[1][i][0]))
-                            self.dynamics.append(mp.map_dynamic(data[1][i][1]))
-                            self.rhythms.append(mp.map_rhythm(data[1][i][2]))
-                            self.durations.append(mp.map_duration(data[1][i][3]))
+                    data = pkl.load(file)[0]
+                    for i in range(len(data[1])):
+                        self.pitches.append(mp.map_pitch(data[1][i][0]))
+                        self.dynamics.append(mp.map_dynamic(data[1][i][1]))
+                        self.rhythms.append(mp.map_rhythm(data[1][i][2]))
+                        self.durations.append(mp.map_duration(data[1][i][3]))
                 except EOFError:
                     print(':: loading finished', file=stderr)
                     break

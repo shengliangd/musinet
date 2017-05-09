@@ -13,21 +13,25 @@ class Loader:
         self.inputs = []
         self.targets = []
         with open(config.data_path, 'rb') as data_file:
-            for item in pickle.load(data_file):
-                # deal with length
-                item[1] = item[1][:config.seq_length]
-                while len(item[1]) < config.seq_length:
-                    item[1].append([0, 0, 0, 0])
+            while True:
+                try:
+                    item = pickle.load(data_file)[0]
+                    # deal with length
+                    item[1] = item[1][:config.seq_length]
+                    while len(item[1]) < config.seq_length:
+                        item[1].append([0, 0, 0, 0])
 
-                # convert data
-                for i in range(len(item[1])):
-                    item[1][i][0] = convert.convert_pitch(item[1][i][0])
-                    item[1][i][1] = convert.convert_pitch(item[1][i][1])
-                    item[1][i][2] = convert.convert_pitch(item[1][i][2])
-                    item[1][i][3] = convert.convert_pitch(item[1][i][3])
+                    # convert data
+                    for i in range(len(item[1])):
+                        item[1][i][0] = convert.convert_pitch(item[1][i][0])
+                        item[1][i][1] = convert.convert_pitch(item[1][i][1])
+                        item[1][i][2] = convert.convert_pitch(item[1][i][2])
+                        item[1][i][3] = convert.convert_pitch(item[1][i][3])
 
-                self.inputs.append(item[1])
-                self.targets.append(item[2])
+                    self.inputs.append(item[1])
+                    self.targets.append(item[2])
+                except EOFError:
+                    break
         self.pointer = 0
 
     def get_next_batch(self):
@@ -43,4 +47,3 @@ class Loader:
 
 if __name__ == '__main__':
     loader = Loader()
-    print(loader.get_next_batch())
