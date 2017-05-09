@@ -5,7 +5,7 @@ import compo_net
 import data_loader
 import six.moves.cPickle as pkl
 import os.path
-import map_data as nm
+import convert as nm
 
 if __name__ == '__main__':
     config = compo_net.Config(training=False,

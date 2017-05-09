@@ -1,11 +1,12 @@
 import six.moves.cPickle as pkl
 from sys import stderr
 import sklearn.preprocessing as preprocessing
-import map_data as mp
+import convert as mp
 import numpy as np
 import sklearn.externals.joblib as joblib
 import os.path
 import random
+
 
 class Loader:
     def __init__(self, config):

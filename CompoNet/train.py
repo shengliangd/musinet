@@ -3,10 +3,12 @@
 # 默认从data/train.pkl中读取训练数据
 # 保存训练结果到save文件夹
 
+
 import tensorflow as tf
 import compo_net
 import data_loader
 import os
+
 
 if __name__ == '__main__':
     config = compo_net.Config(training=True, learning_rate=0.002)
@@ -30,7 +32,6 @@ if __name__ == '__main__':
     while True:
         try:
             inputs, targets = loader.get_next_batch()
-
             [_cost, _] = sess.run([model.cost, model.train], {model.inputs: inputs, model.targets: targets, model.learning_rate: config.learning_rate})
             cost += _cost
             if cost != cost:
