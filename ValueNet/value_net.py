@@ -28,8 +28,8 @@ class Model:
                                           [-1, 1,
                                            int(conv1.shape[1]),
                                            int(conv1.shape[2])]),
-                               [-1, 1, pool2_width, 1],
-                               [-1, 1, pool2_width, 1],
+                               [1, 1, pool2_width, 1],
+                               [1, 1, pool2_width, 1],
                                padding='VALID')
         pool2 = tf.squeeze(pool2, 1)
 
@@ -51,19 +51,18 @@ class Model:
                                           [-1, 1,
                                            int(conv3.shape[1]),
                                            int(conv3.shape[2])]),
-                               [-1, 1, pool4_width, 1],
-                               [-1, 1, pool4_width, 1],
+                               [1, 1, pool4_width, 1],
+                               [1, 1, pool4_width, 1],
                                padding='VALID')
         pool4 = tf.squeeze(pool4, 1)
+        pool4_flat = tf.reshape(pool4, [-1, int(pool4.shape[1])*int(pool4.shape[2])])
 
         # fully connected layer
-        w_full = tf.Variable(tf.truncated_normal([int(pool4.shape[1]),
-                                                  int(pool4.shape[2]),
+        w_full = tf.Variable(tf.truncated_normal([int(pool4_flat.shape[1]),
                                                   1],
                                                  stddev=0.1))
         b_full = tf.Variable(tf.truncated_normal([1], stddev=0.1))
-
-        self.outputs = tf.matmul(pool4, w_full) + b_full
+        self.outputs = tf.matmul(pool4_flat , w_full) + b_full
 
         # cost
         # mean_square for now
