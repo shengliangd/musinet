@@ -3,3 +3,14 @@
 /pkl/*
 /mid_seq/*
 /seq/*
+
+/CompoNet/data/*
+/CompoNet/save/*
+/CompoNet/log/*
+/CompoNet/output/*.mid
+/CompoNet/output/*.pkl
+
+__pycache__/
+*.pyc
+*.pyo
+

@@ -1,7 +1,7 @@
-import six.moves.cPickle as pickle
+import pickle as pkl
 import xml.dom.minidom
 
-def xml2pkl(infile, outfile):
+def xml2pkl(infile, outfile, rank=1.0):
     dom = xml.dom.minidom.parse(infile)
     output = open(outfile, 'wb+')
 
@@ -42,9 +42,9 @@ def xml2pkl(infile, outfile):
             instrument = '48'
         instrument = int(instrument)
 
-        raw_parts.append([instrument, raw_notes])
+        raw_parts.append([instrument, raw_notes, rank])
 
-    pickle.dump(raw_parts, output)
+    pkl.dump(raw_parts, output)
 
 def pkl2xml(infile, outfile):
     dom = xml.dom.minidom.Document()
