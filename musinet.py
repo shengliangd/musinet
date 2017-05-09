@@ -46,13 +46,13 @@ def call_converter(path_in, path_out):
     jar_path = os.path.join(jmusic_dir, 'converter.jar')
     subprocess.call(['java', '-jar', jar_path, path_in, path_out])
 
-def convert_midi_pkl(midi_path, pkl_path):
+def convert_midi_pkl(midi_path, pkl_path, rank=1.0):
     xml_path = tempfile.mktemp()
     if pkl_path == '':
         pkl_path = os.path.splitext(os.path.basename(midi_path))[0]+'.pkl'
     call_converter(midi_path, xml_path)
     xml2seq(xml_path, xml_path)
-    xml2pkl(xml_path, pkl_path)
+    xml2pkl(xml_path, pkl_path, rank)
     os.remove(xml_path)
 
 def convert_pkl_midi(pkl_path, midi_path):
@@ -63,6 +63,7 @@ def convert_pkl_midi(pkl_path, midi_path):
 
 ## Handlers
 def handle_convert(path_in, path_out):
+    print(':: start converting')
     if path_in[-4:].lower() == '.mid':
         convert_midi_pkl(path_in, path_out)
     elif path_in[-4:].lower() == '.pkl':
@@ -75,9 +76,14 @@ def handle_convert_all_midi(midi_dir, pkl_dir):
     for root, dirs, files in os.walk(midi_dir):
         for fn in files:
             midi_path = os.path.join(root, fn)
-            # FIXME: this should keep directory hierachy
+            rank = 1.0
+            if root != midi_dir:
+                try:
+                    rank = float(os.path.basename(root))
+                except:
+                    pass # if dirname is not a float, assume rank=1.0
             pkl_path = os.path.join(pkl_dir, os.path.splitext(fn)[0]+'.pkl')
-            convert_midi_pkl(midi_path, pkl_path)
+            convert_midi_pkl(midi_path, pkl_path, rank)
     if os.path.exists(os.path.join(componet_dir, 'output', 'train.pkl')):
         os.remove(os.path.join(componet_dir, 'output', 'train.pkl'))
 
