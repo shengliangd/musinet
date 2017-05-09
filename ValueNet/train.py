@@ -11,6 +11,7 @@ data_loader = data_loader.Loader()
 sess = tf.Session()
 if config.restore:
     model.restore(sess)
+sess.run(tf.global_variables_initializer())
 
 learning_rate = config.default_lr
 times = 1
