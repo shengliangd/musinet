@@ -11,6 +11,7 @@ midi_dir = os.path.join(musinet_root, 'mid')
 pkl_dir = os.path.join(musinet_root, 'pkl')
 jmusic_dir = os.path.join(musinet_root, 'toolchain', 'jmusic')
 componet_dir = os.path.join(musinet_root, 'CompoNet')
+valuenet_dir = os.path.join(musinet_root, 'ValueNet')
 
 def get_params():
     try:
@@ -84,12 +85,12 @@ def handle_convert_all_midi(midi_dir, pkl_dir):
                     pass # if dirname is not a float, assume rank=1.0
             pkl_path = os.path.join(pkl_dir, os.path.splitext(fn)[0]+'.pkl')
             convert_midi_pkl(midi_path, pkl_path, rank)
-    if os.path.exists(os.path.join(componet_dir, 'output', 'train.pkl')):
-        os.remove(os.path.join(componet_dir, 'output', 'train.pkl'))
+    if os.path.exists(os.path.join(musinet_root, 'data', 'train.pkl')):
+        os.remove(os.path.join(musinet_root, 'data', 'train.pkl'))
 
 def handle_prepare():
     print(':: start preparing')
-    fout = open(os.path.join(componet_dir, 'output', 'train.pkl'), 'wb')
+    fout = open(os.path.join(musinet_root, 'data', 'train.pkl'), 'wb')
     for fn in os.listdir(pkl_dir):
         with open(os.path.join(pkl_dir, fn), 'rb') as fin:
             pkl.dump(pkl.load(fin), fout)
@@ -97,8 +98,8 @@ def handle_prepare():
 
 def handle_train():
     print(':: start training')
-    if not os.path.exists(os.path.join(componet_dir, 'output', 'train.pkl')):
-        fout = open(os.path.join(componet_dir, 'output', 'train.pkl'), 'wb')
+    if not os.path.exists(os.path.join(musinet_root, 'data', 'train.pkl')):
+        fout = open(os.path.join(musinet_root, 'data', 'train.pkl'), 'wb')
         for fn in os.listdir(pkl_dir):
             with open(os.path.join(pkl_dir, fn), 'rb') as fin:
                 pkl.dump(pkl.load(fin), fout)
@@ -109,8 +110,8 @@ def handle_train():
 
 def handle_sample(path_out):
     print(':: start sampling')
-    if not os.path.exists(os.path.join(componet_dir, 'output', 'input.pkl')):
-        print('please prepare %s/output/input.pkl' % componet_dir, file=stderr)
+    if not os.path.exists(os.path.join(musinet_root, 'data', 'input.pkl')):
+        print('please prepare %s/data/input.pkl' % musinet_root, file=stderr)
         exit(1)
     lastwd = os.getcwd()
     os.chdir(componet_dir)
@@ -118,8 +119,8 @@ def handle_sample(path_out):
     os.chdir(lastwd)
     if path_out == '':
         path_out = 'output.mid'
-    convert_pkl_midi(os.path.join(componet_dir, 'output', 'output.pkl'), path_out)
-    os.remove(os.path.join(componet_dir, 'output', 'output.pkl'))
+    convert_pkl_midi(os.path.join(musinet_root, 'output', 'output.pkl'), path_out)
+    os.remove(os.path.join(musinet_root, 'output', 'output.pkl'))
 
 ## Entry
 def main(opt):

@@ -9,7 +9,7 @@ import convert as nm
 
 if __name__ == '__main__':
     config = compo_net.Config(training=False,
-                              data_path='output/input.pkl')
+                              data_path='../data/input.pkl')
     loader = data_loader.Loader(config)
     model = compo_net.Model(config)
     sess = tf.Session()
