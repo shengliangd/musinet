@@ -1,4 +1,4 @@
-import six.moves.cPickle as pickle
+import pickle as pkl
 import xml.dom.minidom
 
 def xml2pkl(infile, outfile):
@@ -44,7 +44,7 @@ def xml2pkl(infile, outfile):
 
         raw_parts.append([instrument, raw_notes])
 
-    pickle.dump(raw_parts, output)
+    pkl.dump(raw_parts, output)
 
 def pkl2xml(infile, outfile):
     dom = xml.dom.minidom.Document()
