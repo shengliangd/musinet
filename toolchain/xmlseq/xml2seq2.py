@@ -9,12 +9,8 @@ def xml_copy_attr(dst, src, attr_name):
     if tmp != '':
         dst.setAttribute(attr_name, tmp)
 
-if __name__ == '__main__':
-    if len(argv) != 3:
-        print("Usage: python3 %s infile outfile" % argv[0])
-        exit(-1)
-
-    dom = xml.dom.minidom.parse(argv[1])
+def xml2seq(infile, outfile):
+    dom = xml.dom.minidom.parse(infile)
     new_dom = xml.dom.minidom.Document()
 
     score = dom.getElementsByTagName('Score')[0]
@@ -113,5 +109,10 @@ if __name__ == '__main__':
 
             seeks[min_i] += 1
 
-    new_dom.writexml(open(argv[2], 'w'), encoding='UTF-8')
+    new_dom.writexml(open(outfile, 'w'), encoding='UTF-8')
 
+if __name__ == '__main__':
+    if len(argv) != 3:
+        print("Usage: python3 %s infile outfile" % argv[0])
+        exit(-1)
+    xml2seq(argv[1], argv[2])
