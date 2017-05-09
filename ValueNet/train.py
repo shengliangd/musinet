@@ -17,6 +17,7 @@ times = 1
 while True:
     try:
         inputs, targets = data_loader.get_next_batch()
+        print(targets)
         [cost, _] = sess.run([model.cost, model.train_op],
                              {model.inputs: inputs, model.targets: targets,
                               model.learning_rate: learning_rate})

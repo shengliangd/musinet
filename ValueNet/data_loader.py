@@ -29,7 +29,7 @@ class Loader:
                         item[1][i][3] = convert.convert_pitch(item[1][i][3])
 
                     self.inputs.append(item[1])
-                    self.targets.append(item[2])
+                    self.targets.append([item[2]])
                 except EOFError:
                     break
         self.pointer = 0
