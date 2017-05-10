@@ -1,5 +1,6 @@
 import tensorflow as tf
 import config
+import os
 
 
 class Model:
@@ -76,20 +77,38 @@ class Model:
         # saver
         self.saver = tf.train.Saver(tf.global_variables())
 
-    def evaluate(self, sess, seqs):
+        # session
+        self.session = tf.Session()
+        if config.can_restore():
+            self.restore()
+        else:
+            self.session.run(tf.global_variables_initializer())
+
+    def train(self, inputs, targets, learning_rate):
+        """
+        Train, returns average cost
+        """
+        return self.session.run([self.cost, self.train_op],
+                                {self.inputs: inputs,
+                                 self.targets: targets,
+                                 self.learning_rate: learning_rate})[0]
+
+    def evaluate(self, seqs):
         """
         Evaluate sequences in seqs, seqs should be a list of note sequence.
         """
-        return sess.run(self.outputs, {self.inputs: seqs})
+        return self.session.run([self.outputs], {self.inputs: seqs})[0]
 
-    def save(self, sess):
+    def save(self):
+        if not os.path.exists(os.path.dirname(config.save_path)):
+            os.mkdir(os.path.dirname(config.save_path))
         print(':: saving model')
-        self.saver.save(sess, config.save_path)
+        self.saver.save(self.session, config.save_path)
         print(':: saved')
 
-    def restore(self, sess):
+    def restore(self):
         print(':: restoring model')
-        self.saver.restore(sess, config.save_path)
+        self.saver.restore(self.session, config.save_path)
         print(':: restored')
 
 if __name__ == '__main__':

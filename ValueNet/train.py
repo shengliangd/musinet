@@ -8,16 +8,8 @@ import os.path
 
 
 if __name__ == '__main__':
-    if not os.path.exists(os.path.dirname(config.save_path)):
-        os.mkdir(os.path.dirname(config.save_path))
-
     model = value_net.Model()
     data_loader = data_loader.Loader()
-
-    sess = tf.Session()
-    sess.run(tf.global_variables_initializer())
-    if config.can_restore():
-        model.restore(sess)
 
     input(':: press enter to start training')
 
@@ -26,10 +18,9 @@ if __name__ == '__main__':
     while True:
         try:
             inputs, targets = data_loader.get_next_batch()
-            [cost, _] = sess.run([model.cost, model.train_op],
-                                 {model.inputs: inputs, model.targets: targets,
-                                  model.learning_rate: learning_rate})
+            cost = model.train(inputs, targets, learning_rate)
 
+            # when use cross entroy, this may happen
             assert cost == cost, 'cost is nan'
 
             print('batch: {0}, cost: {1}'.format(times, cost))
@@ -38,7 +29,7 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             cmd = input('\noperation(w/q/c/l/t):')
             if cmd == 'w':
-                model.save(sess)
+                model.save()
             elif cmd == 'q':
                 exit()
             elif cmd == 'l':
@@ -51,11 +42,11 @@ if __name__ == '__main__':
                     learning_rate = tmp
             elif cmd == 't':
                 inputs, targets = data_loader.get_all()
-                outputs = model.evaluate(sess, inputs)
+                outputs = model.evaluate(inputs)
                 deviation = 0
                 for y, y_ in zip(targets, outputs):
                     print('{0:.8f}, {1:.8f}'.format(y[0], y_[0]))
-                    deviation += (y-y_)**2
-                print('deviation: {0:.8f}'.format(((deviation/len(targets))**0.5)[0]))
+                    deviation += (y[0]-y_[0])**2
+                print('deviation: {0:.8f}'.format((deviation/len(targets))**0.5))
                 input(':: enter to continue')
             continue
