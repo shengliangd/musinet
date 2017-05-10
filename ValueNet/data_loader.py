@@ -18,10 +18,9 @@ class Loader:
                     for item in pickle.load(data_file):
                         # deal with length
                         item[1] = item[1][:config.seq_length]
-                        while len(item[1]) < config.seq_length:
-                            item[1].append([0, 0, 0, 0])
+                        if len(item[1]) < config.seq_length:
+                            continue
 
-                        # convert data
                         for i in range(len(item[1])):
                             item[1][i][0] = convert.convert_pitch(item[1][i][0])
                             item[1][i][1] = convert.convert_pitch(item[1][i][1])
@@ -33,6 +32,8 @@ class Loader:
                 except EOFError:
                     break
         self.pointer = 0
+
+        print(':: loaded {0} sequences'.format(self.num_sequences))
 
     def get_next_batch(self):
         inputs = []
@@ -48,9 +49,12 @@ class Loader:
             self.pointer = 0
         return inputs, targets
 
+    def get_all(self):
+        return self.inputs, self.targets
 
-def load_file(fname):
-    pass
+    @property
+    def num_sequences(self):
+        return len(self.targets)
 
 
 if __name__ == '__main__':

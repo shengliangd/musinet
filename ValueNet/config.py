@@ -6,9 +6,8 @@ num_channels = 4
 save_path = 'save/value_net.sav'
 data_path = '../data/train.pkl'
 batch_size = 32
-default_lr = 0.0004
+default_lr = 0.001
 
 
-@property
-def restore():
+def can_restore():
     return os.path.exists(save_path)

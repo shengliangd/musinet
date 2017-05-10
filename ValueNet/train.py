@@ -6,17 +6,20 @@ import config
 import tensorflow as tf
 import os.path
 
+
 if __name__ == '__main__':
-    if not os.path.exists('save/'):
-        os.mkdir('save')
+    if not os.path.exists(os.path.dirname(config.save_path)):
+        os.mkdir(os.path.dirname(config.save_path))
 
     model = value_net.Model()
     data_loader = data_loader.Loader()
 
     sess = tf.Session()
-    if config.restore:
-        model.restore(sess)
     sess.run(tf.global_variables_initializer())
+    if config.can_restore():
+        model.restore(sess)
+
+    input(':: press enter to start training')
 
     learning_rate = config.default_lr
     times = 1
@@ -33,7 +36,7 @@ if __name__ == '__main__':
             times += 1
 
         except KeyboardInterrupt:
-            cmd = input('Operation(w/q/c/l)')
+            cmd = input('\noperation(w/q/c/l/t):')
             if cmd == 'w':
                 model.save(sess)
             elif cmd == 'q':
@@ -46,4 +49,13 @@ if __name__ == '__main__':
                     print(':: invalid learning rate')
                 else:
                     learning_rate = tmp
+            elif cmd == 't':
+                inputs, targets = data_loader.get_all()
+                outputs = model.evaluate(sess, inputs)
+                deviation = 0
+                for y, y_ in zip(targets, outputs):
+                    print('{0:.8f}, {1:.8f}'.format(y[0], y_[0]))
+                    deviation += (y-y_)**2
+                print('deviation: {0:.8f}'.format(((deviation/len(targets))**0.5)[0]))
+                input(':: enter to continue')
             continue
