@@ -129,7 +129,6 @@ def handle_sample(path_out):
     if path_out == '':
         path_out = 'output.mid'
     convert_pkl_midi(os.path.join(musinet_root, 'output', 'output.pkl'), path_out)
-    os.remove(os.path.join(musinet_root, 'output', 'output.pkl'))
 
 
 # Entry
