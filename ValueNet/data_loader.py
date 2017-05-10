@@ -43,6 +43,7 @@ class Loader:
                 targets.append(self.targets[self.pointer+i])
         except IndexError:
             pass
+        self.pointer += config.batch_size
         return inputs, targets
 
 
