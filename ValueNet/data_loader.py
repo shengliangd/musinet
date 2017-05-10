@@ -1,5 +1,6 @@
-"""data_loader for ValueNet
-    train.pkl should be of format [instrument_code, [seq], value(score)]
+"""
+data_loader for ValueNet
+train.pkl should be of format [instrument_code, [seq], value(score)]
 """
 
 
@@ -55,7 +56,3 @@ class Loader:
     @property
     def num_sequences(self):
         return len(self.targets)
-
-
-if __name__ == '__main__':
-    loader = Loader()

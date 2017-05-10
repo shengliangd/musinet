@@ -63,7 +63,7 @@ class Model:
                                                   1],
                                                  stddev=0.1))
         b_full = tf.Variable(tf.truncated_normal([1], stddev=0.1))
-        self.outputs = tf.sigmoid(tf.matmul(pool4_flat , w_full) + b_full)
+        self.outputs = tf.sigmoid(tf.matmul(pool4_flat, w_full) + b_full)
 
         # cost
         # mean_square for now
@@ -110,6 +110,3 @@ class Model:
         print(':: restoring model')
         self.saver.restore(self.session, config.save_path)
         print(':: restored')
-
-if __name__ == '__main__':
-    model = Model()
