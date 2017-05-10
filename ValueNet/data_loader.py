@@ -45,5 +45,10 @@ class Loader:
             pass
         return inputs, targets
 
+
+def load_file(fname):
+    pass
+
+
 if __name__ == '__main__':
     loader = Loader()

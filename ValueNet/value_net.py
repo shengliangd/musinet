@@ -73,8 +73,13 @@ class Model:
         optimizer = tf.train.AdamOptimizer(self.learning_rate)
         self.train_op = optimizer.minimize(self.cost)
 
-    def evaluate(self, seq):
-        pass
+        # saver
+        self.saver = tf.train.Saver(tf.global_variables())
+
+    # seqs: list of sequences
+    def evaluate(self, sess, seqs):
+        self.saver.restore(sess, config.save_path)
+        return sess.run(self.outputs, {self.inputs: seqs})
 
     def save(self, sess):
         try:
