@@ -66,6 +66,7 @@ def rand(idx):
 
 def process_phrase(phrase, indices):
     "Substitute channel idx of @phrase with randomly generated rubbish, where idx is in @indices"
+    phrase[2] = 0.0
     seq = phrase[1]
     for note in seq:
         for idx in indices:

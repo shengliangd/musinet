@@ -10,4 +10,4 @@ default_lr = 0.0004
 
 
 def can_restore():
-    return os.path.exists(save_path)
+    return os.path.exists(os.path.join(os.path.dirname(save_path), 'checkpoint'))
