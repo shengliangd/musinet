@@ -44,6 +44,8 @@ class Loader:
         except IndexError:
             pass
         self.pointer += config.batch_size
+        if self.pointer >= len(self.inputs):
+            self.pointer = 0
         return inputs, targets
 
 

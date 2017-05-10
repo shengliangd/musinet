@@ -30,6 +30,7 @@ if __name__ == '__main__':
             assert cost == cost, 'cost is nan'
 
             print('batch: {0}, cost: {1}'.format(times, cost))
+            times += 1
 
         except KeyboardInterrupt:
             cmd = input('Operation(w/q/c/l)')
