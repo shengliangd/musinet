@@ -9,6 +9,5 @@ batch_size = 32
 default_lr = 0.0004
 
 
-@property
-def restore():
-    return os.path.exists(save_path)
+def can_restore():
+    return os.path.exists(os.path.join(os.path.dirname(save_path), 'checkpoint'))

@@ -1,5 +1,6 @@
 import tensorflow as tf
 import config
+import os
 
 
 class Model:
@@ -62,11 +63,11 @@ class Model:
                                                   1],
                                                  stddev=0.1))
         b_full = tf.Variable(tf.truncated_normal([1], stddev=0.1))
-        self.outputs = tf.matmul(pool4_flat , w_full) + b_full
+        self.outputs = tf.sigmoid(tf.matmul(pool4_flat, w_full) + b_full)
 
         # cost
         # mean_square for now
-        self.cost = tf.reduce_mean(tf.square(self.targets - self.outputs))
+        self.cost = tf.reduce_mean(tf.square(self.outputs - self.targets))
 
         # optimizer and train operator
         self.learning_rate = tf.placeholder(tf.float32)
@@ -76,21 +77,36 @@ class Model:
         # saver
         self.saver = tf.train.Saver(tf.global_variables())
 
-    # seqs: list of sequences
-    def evaluate(self, sess, seqs):
-        self.saver.restore(sess, config.save_path)
-        return sess.run(self.outputs, {self.inputs: seqs})
+        # session
+        self.session = tf.Session()
+        if config.can_restore():
+            self.restore()
+        else:
+            self.session.run(tf.global_variables_initializer())
 
-    def save(self, sess):
-        try:
-            pass
-        finally:
-            print(':: saving model')
-            self.saver.save(sess, config.save_path)
-            print(':: saved')
+    def train(self, inputs, targets, learning_rate):
+        """
+        Train, returns average cost
+        """
+        return self.session.run([self.cost, self.train_op],
+                                {self.inputs: inputs,
+                                 self.targets: targets,
+                                 self.learning_rate: learning_rate})[0]
 
-    def restore(self, sess):
-        pass
+    def evaluate(self, seqs):
+        """
+        Evaluate sequences in seqs, seqs should be a list of note sequence.
+        """
+        return self.session.run([self.outputs], {self.inputs: seqs})[0]
 
-if __name__ == '__main__':
-    model = Model()
+    def save(self):
+        if not os.path.exists(os.path.dirname(config.save_path)):
+            os.mkdir(os.path.dirname(config.save_path))
+        print(':: saving model')
+        self.saver.save(self.session, config.save_path)
+        print(':: saved')
+
+    def restore(self):
+        print(':: restoring model')
+        self.saver.restore(self.session, config.save_path)
+        print(':: restored')
