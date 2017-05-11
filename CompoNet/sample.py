@@ -25,4 +25,4 @@ if __name__ == '__main__':
             output[i][2] = nm.unmap_rhythm(output[i][2])
             output[i][3] = nm.unmap_duration(output[i][3])
         print(output)
-        pkl.dump([48, output], file)
+        pkl.dump([[48, output]], file)
