@@ -13,6 +13,7 @@ class Loader:
     def __init__(self):
         self.inputs = []
         self.targets = []
+        self.num_sequences = {0.0: 0, 0.4: 0, 0.6: 0, 1.0: 0}
         with open(config.data_path, 'rb') as data_file:
             while True:
                 try:
@@ -26,15 +27,17 @@ class Loader:
                             item[1][i][0] = convert.convert_pitch(item[1][i][0])
                             item[1][i][1] = convert.convert_pitch(item[1][i][1])
                             item[1][i][2] = convert.convert_pitch(item[1][i][2])
-                        item[1][i][3] = convert.convert_pitch(item[1][i][3])
+                            item[1][i][3] = convert.convert_pitch(item[1][i][3])
 
                         self.inputs.append(item[1])
                         self.targets.append([item[2]])
+                        self.num_sequences[item[2]] += 1
                 except EOFError:
                     break
         self.pointer = 0
 
-        print(':: loaded {0} sequences'.format(self.num_sequences))
+        print(':: loaded {0} sequences'.format(sum(self.num_sequences)))
+        print(':: {0}'.format(self.num_sequences))
 
     def get_next_batch(self):
         inputs = []
@@ -53,6 +56,3 @@ class Loader:
     def get_all(self):
         return self.inputs, self.targets
 
-    @property
-    def num_sequences(self):
-        return len(self.targets)
