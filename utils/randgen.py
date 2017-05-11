@@ -43,10 +43,10 @@ def rand_pitch():
     return pitch
 
 def rand_dynamic():
-    dynamic = random.randint(2000, 13000)
-    if dynamic == 2000:
+    dynamic = random.randint(20, 130)
+    if dynamic == 20:
         dynamic = 0
-    return dynamic / 10000
+    return dynamic
 
 def rand_rhythm():
     return random.randint(0, 20000) / 10000
