@@ -71,7 +71,7 @@ if options == None:
     exit(1)
 
 if (True, True, True, True) == (options.pitch, options.dynamic, options.rhythm, options.duration):
-    notes = [[rand_pitch(), rand_dynamic(), rand_rhythm(), rand_duration()] for x in range(0, 1024)]
+    notes = [[rand_pitch(), rand_dynamic(), rand_rhythm(), rand_duration()] for x in range(0, 512)]
     phrase = [48, notes, 0.0] # rank is 0.0
     score = [phrase]
 else:
