@@ -13,6 +13,7 @@ jmusic_dir = os.path.join(musinet_root, 'toolchain', 'jmusic')
 componet_dir = os.path.join(musinet_root, 'CompoNet')
 valuenet_dir = os.path.join(musinet_root, 'ValueNet')
 
+
 def get_params():
     try:
         opt = OptionParser()
@@ -43,9 +44,11 @@ def get_params():
     except Exception as ex:
         print('unhandled exception {0}'.format(str(ex)), file=stderr)
 
+
 def call_converter(path_in, path_out):
     jar_path = os.path.join(jmusic_dir, 'converter.jar')
     subprocess.call(['java', '-jar', jar_path, path_in, path_out])
+
 
 def convert_midi_pkl(midi_path, pkl_path, rank=1.0):
     xml_path = tempfile.mktemp()
@@ -56,19 +59,24 @@ def convert_midi_pkl(midi_path, pkl_path, rank=1.0):
     xml2pkl(xml_path, pkl_path, rank)
     os.remove(xml_path)
 
+
 def convert_pkl_midi(pkl_path, midi_path):
     xml_path = tempfile.mktemp()+'.xml'
     pkl2xml(pkl_path, xml_path)
+    if midi_path == '':
+	midi_path = os.path.splitext(os.path.basename(pkl_path))[0]+'.mid'
     call_converter(xml_path, midi_path)
     os.remove(xml_path)
 
-## Handlers
+
+# Handlers
 def handle_convert(path_in, path_out):
     print(':: start converting')
     if path_in[-4:].lower() == '.mid':
         convert_midi_pkl(path_in, path_out)
     elif path_in[-4:].lower() == '.pkl':
         convert_pkl_midi(path_in, path_out)
+
 
 def handle_convert_all_midi(midi_dir, pkl_dir):
     print(':: start converting')
@@ -88,6 +96,7 @@ def handle_convert_all_midi(midi_dir, pkl_dir):
     if os.path.exists(os.path.join(musinet_root, 'data', 'train.pkl')):
         os.remove(os.path.join(musinet_root, 'data', 'train.pkl'))
 
+
 def handle_prepare():
     print(':: start preparing')
     fout = open(os.path.join(musinet_root, 'data', 'train.pkl'), 'wb')
@@ -95,6 +104,7 @@ def handle_prepare():
         with open(os.path.join(pkl_dir, fn), 'rb') as fin:
             pkl.dump(pkl.load(fin), fout)
     fout.close()
+
 
 def handle_train():
     print(':: start training')
@@ -108,6 +118,7 @@ def handle_train():
     os.system(os.path.join(componet_dir, 'train.py'))
     os.chdir(lastwd)
 
+
 def handle_sample(path_out):
     print(':: start sampling')
     if not os.path.exists(os.path.join(musinet_root, 'data', 'input.pkl')):
@@ -120,9 +131,9 @@ def handle_sample(path_out):
     if path_out == '':
         path_out = 'output.mid'
     convert_pkl_midi(os.path.join(musinet_root, 'output', 'output.pkl'), path_out)
-    os.remove(os.path.join(musinet_root, 'output', 'output.pkl'))
 
-## Entry
+
+# Entry
 def main(opt):
     if opt.convert != '':
         handle_convert(opt.convert, opt.output)
@@ -135,9 +146,10 @@ def main(opt):
     if opt.sample:
         handle_sample(opt.output)
 
+
 if __name__ == '__main__':
     options = get_params()
-    if options == None:
+    if options is None:
         exit(1)
     main(options)
 else:

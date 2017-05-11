@@ -61,12 +61,13 @@ def pkl2xml(infile, outfile):
     with open(infile, 'rb') as file:
         while True:
             try:
-                for tmp in pkl.load(file)[1]:
-                    note = dom.createElement('Note')
-                    note.setAttribute('pitch', str(tmp[0]))
-                    note.setAttribute('dynamic', str(tmp[1]))
-                    note.setAttribute('rhythmValue', str(tmp[2]))
-                    note.setAttribute('duration', str(tmp[3]))
+                for score in pkl.load(file):
+                    for tmp in score[1]:
+                        note = dom.createElement('Note')
+                        note.setAttribute('pitch', str(tmp[0]))
+                        note.setAttribute('dynamic', str(tmp[1]))
+                        note.setAttribute('rhythmValue', str(tmp[2]))
+                        note.setAttribute('duration', str(tmp[3]))
     
                     phrase.appendChild(note)
             except EOFError:
