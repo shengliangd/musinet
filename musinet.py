@@ -47,7 +47,7 @@ def get_params():
 
 def call_converter(path_in, path_out):
     jar_path = os.path.join(jmusic_dir, 'converter.jar')
-    subprocess.call(['java', '-jar', jar_path, path_in, path_out])
+    subprocess.call(['java', '-jar', '-Xss100M', jar_path, path_in, path_out])
 
 
 def convert_midi_pkl(midi_path, pkl_path, rank=1.0):
@@ -64,7 +64,7 @@ def convert_pkl_midi(pkl_path, midi_path):
     xml_path = tempfile.mktemp()+'.xml'
     pkl2xml(pkl_path, xml_path)
     if midi_path == '':
-	midi_path = os.path.splitext(os.path.basename(pkl_path))[0]+'.mid'
+        midi_path = os.path.splitext(os.path.basename(pkl_path))[0]+'.mid'
     call_converter(xml_path, midi_path)
     os.remove(xml_path)
 

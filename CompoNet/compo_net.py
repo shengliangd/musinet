@@ -4,12 +4,15 @@ from tensorflow.contrib import rnn
 from tensorflow.contrib import legacy_seq2seq
 import os.path
 import random
-
+import sys
+sys.path.append('..')
+import ValueNet.config as vconfig
+vconfig.seq_length = 32
 
 class Config:
     def __init__(self, num_layers=2, rnn_size=128,
-                 seq_length=32,
-                 training=True, batch_size=4,
+                 seq_length=vconfig.seq_length,
+                 training=True, batch_size=1,
                  grad_clip=5,
                  save_dir='save/',
                  log_dir='log/',
@@ -20,7 +23,6 @@ class Config:
                  output_keep_prob=1,
                  encoders=None,
                  vec_lengths=None,
-
                  restore=True):
         self.num_layers = num_layers
         self.rnn_size = rnn_size

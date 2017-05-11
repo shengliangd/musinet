@@ -1,0 +1,2 @@
+model_checkpoint_path: "value_net.sav"
+all_model_checkpoint_paths: "value_net.sav"

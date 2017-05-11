@@ -69,7 +69,7 @@ def pkl2xml(infile, outfile):
                         note.setAttribute('rhythmValue', str(tmp[2]))
                         note.setAttribute('duration', str(tmp[3]))
     
-                    phrase.appendChild(note)
+                        phrase.appendChild(note)
             except EOFError:
                 break
     
