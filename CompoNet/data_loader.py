@@ -21,6 +21,8 @@ class Loader:
             while True:
                 try:
                     for data in pkl.load(file):
+                        if data[2] != 1.0:
+                            continue
                         for i in range(len(data[1])):
                             self.pitches.append(mp.map_pitch(data[1][i][0]))
                             self.dynamics.append(mp.map_dynamic(data[1][i][1]))
