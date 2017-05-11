@@ -1,6 +1,6 @@
-# map values to [0,1]
-
-import math
+"""
+map values to [0,1]
+"""
 
 
 epsl = 1e-4
@@ -41,6 +41,9 @@ def unmap_duration(x):
 
 
 '''
+import math
+
+
 def map_pitch(x):
     if x <= 0:
         return 0

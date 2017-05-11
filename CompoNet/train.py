@@ -27,6 +27,7 @@ if __name__ == '__main__':
     if config.restore:
         model.restore(sess)
 
+    input(':: press enter to start training')
     times = 1
     cost = 0
     while True:
@@ -43,7 +44,7 @@ if __name__ == '__main__':
             print('epoch: %d, cost: %.8f' % (times / loader.num_batches, _cost))
             times += 1
         except KeyboardInterrupt:
-            cmd = input('Operation(w/q/c/l):')
+            cmd = input('\noperation(w/q/c/l):')
             if 'w' == cmd:
                 model.save(sess)
             if 'q' == cmd:
