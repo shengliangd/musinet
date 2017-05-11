@@ -16,12 +16,6 @@ def get_params():
         opt.add_option('--output', dest='output', type=str, default='')
         opt.add_option('--dump', action='store_true', dest='dump')
         (options, args) = opt.parse_args()
-        if options.template == '':
-            print('must provide a template', file=sys.stderr)
-            return None
-        if options.output == '':
-            print('must provide output path', file=sys.stderr)
-            return None
         if not (options.pitch or options.dynamic or options.rhythm or options.duration):
             print('must provide at least one channel', file=sys.stderr)
             return None
@@ -75,12 +69,21 @@ options = get_params()
 if options == None:
     exit(1)
 
-with open(options.template, 'rb') as fin:
-    score = pkl.load(fin)
-    for phrase in score:
-        process_phrase(phrase, indices(options))
-    if options.dump == True:
-        print(score)
+if (True, True, True, True) == (options.pitch, options.dynamic, options.rhythm, options.duration):
+    notes = [[rand_pitch(), rand_dynamic(), rand_rhythm(), rand_duration()] for x in range(0, 1024)]
+    phrase = [48, notes, 0.0] # rank is 0.0
+    score = [phrase]
+else:
+    if options.template == '':
+        print('must provide a template', file=sys.stderr)
+        exit(1)
+    with open(options.template, 'rb') as fin:
+        score = pkl.load(fin)
+        for phrase in score:
+            process_phrase(phrase, indices(options))
+if options.dump == True:
+    print(score)
+if options.output != '':
     with open(options.output, 'wb') as fout:
         pkl.dump(score, fout)
 
