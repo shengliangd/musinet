@@ -22,7 +22,7 @@ class Loader:
             while True:
                 try:
                     for data in pkl.load(file):
-                        if data[2] != 1.0:
+                        if data[2] != 1.0 or len(data[1]) < 512:
                             continue
                         for i in range(len(data[1])):
                             self.pitches.append(mp.map_pitch(data[1][i][0]))
