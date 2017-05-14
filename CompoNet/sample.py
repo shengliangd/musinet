@@ -16,7 +16,7 @@ if __name__ == '__main__':
     sess.run(tf.global_variables_initializer())
     model.restore(sess)
 
-    inp = loader.get_sequence(pointer=0, length=20)
+    inp = loader.get_sequence(pointer=0, length=64)
     with open(os.path.join(config.output_dir, 'output.pkl'), 'wb+') as file:
         output = model.sample(sess, inp, final_len=512)
         for i in range(len(output)):

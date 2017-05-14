@@ -5,14 +5,11 @@ from tensorflow.contrib import legacy_seq2seq
 import os.path
 import random
 import sys
-sys.path.append('..')
-import ValueNet.config as vconfig
-vconfig.seq_length = 32
 
 class Config:
     def __init__(self, num_layers=2, rnn_size=128,
-                 seq_length=vconfig.seq_length,
-                 training=True, batch_size=1,
+                 seq_length=128,
+                 training=True, batch_size=4,
                  grad_clip=5,
                  save_dir='save/',
                  log_dir='log/',
@@ -74,7 +71,7 @@ class Model:
         self.vec_len = sum(config.vec_lengths)
 
         # input placeholder
-        with tf.name_scope('inputs'):
+        with tf.name_scope('input'):
             self.inputs = tf.placeholder(tf.float32,
                                          [config.batch_size,
                                           config.seq_length,
@@ -83,7 +80,7 @@ class Model:
             inputs = tf.split(self.inputs, config.seq_length, 1)  # [batch_size, 1, vec_len]*seq_length
             inputs = [tf.squeeze(_input, [1]) for _input in inputs]  # [batch_size, vec_len]*seq_length
 
-        with tf.name_scope('targets'):
+        with tf.name_scope('target'):
             self.targets = tf.placeholder(tf.float32,
                                           [config.batch_size,
                                            config.seq_length,
@@ -92,7 +89,7 @@ class Model:
             targets = [tf.squeeze(_target, [1]) for _target in targets]
 
         # create rnn cells and stack them together
-        with tf.name_scope('lstm_cells'):
+        with tf.name_scope('lstm_cell'):
             cells = []
             for _ in range(config.num_layers):
                 cell = rnn.BasicLSTMCell(config.rnn_size)  # don't dropout for now
@@ -118,7 +115,7 @@ class Model:
             # [batch_size, rnn_size]*seq_length -> [batch_size, vec_length]*seq_length
             outputs = [tf.matmul(_output, w_output)+b_output for _output in outputs]
 
-        with tf.name_scope('outputs'):
+        with tf.name_scope('output'):
             self.probs = []
             for elem in outputs:
                 slices = []
@@ -198,12 +195,9 @@ class Model:
         return ret
 
     def save(self, sess):
-        try:
-            pass
-        finally:
-            print('saving model')
-            self.saver.save(sess, os.path.join(self.config.save_dir, 'compo_net.sav'))
-            print('saved')
+        print('saving model')
+        self.saver.save(sess, os.path.join(self.config.save_dir, 'compo_net.sav'))
+        print('saved')
 
     def restore(self, sess):
         self.saver.restore(sess, os.path.join(self.config.save_dir, 'compo_net.sav'))

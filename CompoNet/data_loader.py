@@ -18,6 +18,7 @@ class Loader:
         self.rhythms = []
         self.durations = []
         with open(config.data_path, 'rb') as file:
+            total = 0
             while True:
                 try:
                     for data in pkl.load(file):
@@ -28,14 +29,10 @@ class Loader:
                             self.dynamics.append(mp.map_dynamic(data[1][i][1]))
                             self.rhythms.append(mp.map_rhythm(data[1][i][2]))
                             self.durations.append(mp.map_duration(data[1][i][3]))
+                        total += 1
                 except EOFError:
-                    print(':: loading finished', file=stderr)
+                    print(':: loading finished, total {0}'.format(total), file=stderr)
                     break
-
-        self.pitches.append(self.pitches[0])
-        self.dynamics.append(self.dynamics[0])
-        self.rhythms.append(self.rhythms[0])
-        self.durations.append(self.durations[0])
 
         self.pitches = np.array(self.pitches).reshape(-1, 1)
         self.dynamics = np.array(self.dynamics).reshape(-1, 1)
