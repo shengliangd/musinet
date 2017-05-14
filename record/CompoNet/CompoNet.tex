@@ -1,11 +1,27 @@
-\documentclass[UTF8]{ctexart}
-  \title{关于工具链}
+\documentclass[UTF8]{article}
+  \title{关于}
   \author{邓胜亮}
   \email{faultrit@outlook.com}
 \begin{document}
   \maketitle
   \section{功能}
+    接受一段音符序列，对其进行“续写”。
   \section{输入}
-  \section{结构}
+    我们在已有的mid文件中随机选取了一些统计了音符的四个要素
+    （pitch，dynamic，rhythmValue，duration）的分布情况如下：
+      \includegraphics{}
+      \includegraphics{}
+      \includegraphics{}
+      \includegraphics{}
+    可以看出，虽然rhythmValue和duration的取值理论上是连续的，但实际上取到的值很有限，
+    因此可以认为这四个要素都是离散的。基于这个事实，
+    为了能够进行随机取样和关于“信息密度”的直觉判断，
+    我们对输入的四个要素先分别进行one-hot编码，再连接成一个向量作为神经网络的输入。
+
+  \section{结构和训练}
+    我们模仿char-rnn-tensorflow构建了一个两层、每层128个神经元的lstm，增加了一个隐层
+    将lstm层的输出变换为和输入向量相同的长度，然后拆分为四个部分，对每部分计算softmax，
+    得到音符的每个要素所有取值的概率分布，然后将其与下一个音符的one-hot编码计算交叉熵作为
+    损失函数。
   \section{效果}
 \end{document}
