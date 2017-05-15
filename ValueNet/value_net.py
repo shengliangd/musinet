@@ -99,7 +99,7 @@ class Model:
 
     def evaluate(self, seqs):
         """
-        Evaluate sequences in seqs, seqs should be a list of note sequence.
+        Evaluate sequences in seqs, seqs should be a list of note sequence that is normalized.
         """
         return self.session.run([self.outputs], {self.inputs: seqs})[0]
 
