@@ -15,7 +15,6 @@ def get_params():
         opt.add_option('--duration', action='store_true', dest='duration')
         opt.add_option('--output', dest='output', type=str, default='')
         opt.add_option('--dump', action='store_true', dest='dump')
-        opt.add_option('--length', dest='length', type=int, default=512)
         (options, args) = opt.parse_args()
         if not (options.pitch or options.dynamic or options.rhythm or options.duration):
             print('must provide at least one channel', file=sys.stderr)
@@ -74,27 +73,28 @@ def process_phrase(phrase, indices):
         for idx in indices:
             note[idx] = rand(idx)
 
-options = get_params()
-if options == None:
-    exit(1)
-
-if (True, True, True, True) == (options.pitch, options.dynamic, options.rhythm, options.duration):
-    notes = [[rand_pitch(), rand_dynamic(), rand_rhythm(), rand_duration()] for x in range(0, options.length)]
-    phrase = [48, notes, 0.0] # rank is 0.0
-    score = [phrase]
-else:
-    if options.template == '':
-        print('must provide a template', file=sys.stderr)
+if __name__ == '__main__':
+    options = get_params()
+    if options == None:
         exit(1)
-    with open(options.template, 'rb') as fin:
-        score = pkl.load(fin)
-        for phrase in score:
-            process_phrase(phrase, indices(options))
-if options.dump == True:
-    print(score)
-if options.output != '':
-    with open(options.output, 'wb') as fout:
-        pkl.dump(score, fout)
 
-# Done
-print('%s' % options.template)
+    if (True, True, True, True) == (options.pitch, options.dynamic, options.rhythm, options.duration):
+        notes = [[rand_pitch(), rand_dynamic(), rand_rhythm(), rand_duration()] for x in range(0, 512)]
+        phrase = [48, notes, 0.0] # rank is 0.0
+        score = [phrase]
+    else:
+        if options.template == '':
+            print('must provide a template', file=sys.stderr)
+            exit(1)
+        with open(options.template, 'rb') as fin:
+            score = pkl.load(fin)
+            for phrase in score:
+                process_phrase(phrase, indices(options))
+    if options.dump == True:
+        print(score)
+    if options.output != '':
+        with open(options.output, 'wb') as fout:
+            pkl.dump(score, fout)
+
+    # Done
+    print('%s' % options.template)
