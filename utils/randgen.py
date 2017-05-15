@@ -1,9 +1,9 @@
 #!/usr/bin/python3
-import os
 import sys
 from optparse import OptionParser
 import pickle as pkl
 import random
+
 
 def get_params():
     try:
@@ -15,6 +15,7 @@ def get_params():
         opt.add_option('--duration', action='store_true', dest='duration')
         opt.add_option('--output', dest='output', type=str, default='')
         opt.add_option('--dump', action='store_true', dest='dump')
+        opt.add_option('--length', dest='length', type=int, default=512)
         (options, args) = opt.parse_args()
         if not (options.pitch or options.dynamic or options.rhythm or options.duration):
             print('must provide at least one channel', file=sys.stderr)
@@ -23,6 +24,7 @@ def get_params():
     except Exception as ex:
         print('unhandled exception :{0}'.format(str(ex)), file=sys.stderr)
         return None
+
 
 def indices(options):
     indices = []
@@ -36,11 +38,13 @@ def indices(options):
         indices.append(3)
     return indices
 
+
 def rand_pitch():
     pitch = random.randint(20, 95)
     if pitch == 20:
         pitch = -2147483648
     return pitch
+
 
 def rand_dynamic():
     dynamic = random.randint(20, 130)
@@ -48,15 +52,19 @@ def rand_dynamic():
         dynamic = 0
     return dynamic
 
+
 def rand_rhythm():
     return random.randint(0, 20000) / 10000
+
 
 def rand_duration():
     return random.randint(0, 20000) / 10000
 
+
 def rand(idx):
     "random for channel idx"
     return [rand_pitch, rand_dynamic, rand_rhythm, rand_duration][idx]()
+
 
 def process_phrase(phrase, indices):
     "Substitute channel idx of @phrase with randomly generated rubbish, where idx is in @indices"
@@ -71,7 +79,7 @@ if options == None:
     exit(1)
 
 if (True, True, True, True) == (options.pitch, options.dynamic, options.rhythm, options.duration):
-    notes = [[rand_pitch(), rand_dynamic(), rand_rhythm(), rand_duration()] for x in range(0, 512)]
+    notes = [[rand_pitch(), rand_dynamic(), rand_rhythm(), rand_duration()] for x in range(0, options.length)]
     phrase = [48, notes, 0.0] # rank is 0.0
     score = [phrase]
 else:

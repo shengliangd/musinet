@@ -6,6 +6,7 @@ import data_loader
 import six.moves.cPickle as pkl
 import os.path
 import convert as nm
+from argparse import ArgumentParser
 
 if __name__ == '__main__':
     config = compo_net.Config(training=False,
@@ -17,8 +18,13 @@ if __name__ == '__main__':
     model.restore(sess)
 
     inp = loader.get_sequence(pointer=0, length=64)
+
+    parser = ArgumentParser()
+    parser.add_argument('--length', type=int, default=512)
+    args = parser.parse_args()
+
     with open(os.path.join(config.output_dir, 'output.pkl'), 'wb+') as file:
-        output = model.sample(sess, inp, final_len=512)
+        output = model.sample(sess, inp, final_len=args.length)
         for i in range(len(output)):
             output[i][0] = nm.unmap_pitch(output[i][0])
             output[i][1] = nm.unmap_dynamic(output[i][1])
