@@ -43,7 +43,6 @@ if __name__ == '__main__':
             elif cmd == 't':
                 inputs, targets = data_loader.get_all()
                 outputs = model.evaluate(inputs)
-                input(outputs)
                 deviation = 0
                 count_total = {0.0: 0, 0.4: 0, 0.6: 0, 1.0: 0}
                 count_good = {0.0: 0, 0.4: 0, 0.6: 0, 1.0: 0}

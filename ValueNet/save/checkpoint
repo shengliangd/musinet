@@ -1,2 +1,2 @@
-model_checkpoint_path: "value_net.sav"
-all_model_checkpoint_paths: "value_net.sav"
+model_checkpoint_path: "/home/wells/musinet/ValueNet/save/value_net.sav"
+all_model_checkpoint_paths: "/home/wells/musinet/ValueNet/save/value_net.sav"
