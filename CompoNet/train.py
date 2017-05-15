@@ -11,7 +11,7 @@ import os
 
 
 if __name__ == '__main__':
-    config = compo_net.Config(training=True, learning_rate=0.002)
+    config = compo_net.Config(training=True, learning_rate=0)
     config.restore = os.path.exists(os.path.join(config.save_dir, 'checkpoint'))
     if config.restore:
         print(':: restore from saved model')
@@ -26,7 +26,8 @@ if __name__ == '__main__':
 
     if config.restore:
         model.restore(sess)
-
+    
+    input('NOTICE: initial learning rate is 0, reset after start')
     input(':: press enter to start training')
     times = 1
     cost = 0
@@ -57,4 +58,12 @@ if __name__ == '__main__':
                     print(':: invalid value')
                 else:
                     config.learning_rate = tmp
+            if 'b' == cmd:
+                print('current bound: {0}'.format(loader.bound));
+                try:
+                    tmp = int(input('set new bound:'))
+                except:
+                    print(':: invalid value')
+                else:
+                    loader.bound = tmp
             continue

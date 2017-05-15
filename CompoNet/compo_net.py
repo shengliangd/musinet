@@ -8,7 +8,7 @@ import sys
 
 class Config:
     def __init__(self, num_layers=2, rnn_size=128,
-                 seq_length=128,
+                 seq_length=32,
                  training=True, batch_size=4,
                  grad_clip=5,
                  save_dir='save/',
@@ -61,7 +61,7 @@ def _sample(weights):
             if summation >= rand:
                 return i
 
-    return len(weights)-1
+    return random.randint(0, len(weights)-1)
 
 
 class Model:

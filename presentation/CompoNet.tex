@@ -6,14 +6,17 @@
   \section{功能}
     接受一段音符序列，对其进行“续写”。
   \section{输入}
-    我们在已有的mid文件中随机选取了一些统计了音符的四个要素
-    （pitch，dynamic，rhythmValue，duration）的分布情况如图1,2,3,4：
-    \begin{figure}[H]
-      \includegraphics[width=.5\textwidth]{picture/pitches.png}
-      \includegraphics[width=.5\textwidth]{picture/dynamics.png}
-      \includegraphics[width=.5\textwidth]{picture/rhythms.png}
-      \includegraphics[width=.5\textwidth]{picture/durations.png}
-    \end{figure}
+    我们在已有的mid文件中随机选取了一些统计了音符的四个
+    要素（pitch，dynamic，rhythmValue，duration）的分布情况如下图所示：
+    
+    \includegraphics[width=.95\textwidth]{picture/pitches.png}
+      
+    \includegraphics[width=.95\textwidth]{picture/dynamics.png}
+
+    \includegraphics[width=.95\textwidth]{picture/rhythms.png}
+    
+    \includegraphics[width=.95\textwidth]{picture/durations.png}
+
     可以看出，虽然rhythmValue和duration的取值理论上是连续的，但实际上取到的值很有限，
     因此可以认为这四个要素都是离散的。基于这个事实，
     为了能够进行随机取样和关于“信息密度”的直觉判断，

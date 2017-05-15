@@ -25,9 +25,9 @@ class Loader:
 
                         for i in range(len(item[1])):
                             item[1][i][0] = convert.convert_pitch(item[1][i][0])
-                            item[1][i][1] = convert.convert_pitch(item[1][i][1])
-                            item[1][i][2] = convert.convert_pitch(item[1][i][2])
-                            item[1][i][3] = convert.convert_pitch(item[1][i][3])
+                            item[1][i][1] = convert.convert_dynamic(item[1][i][1])
+                            item[1][i][2] = convert.convert_rhythm(item[1][i][2])
+                            item[1][i][3] = convert.convert_duration(item[1][i][3])
 
                         self.inputs.append(item[1])
                         self.targets.append([item[2]])

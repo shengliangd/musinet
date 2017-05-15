@@ -19,12 +19,8 @@ if __name__ == '__main__':
 
     inp = loader.get_sequence(pointer=0, length=64)
 
-    parser = ArgumentParser()
-    parser.add_argument('--length', type=int, default=512)
-    args = parser.parse_args()
-
     with open(os.path.join(config.output_dir, 'output.pkl'), 'wb+') as file:
-        output = model.sample(sess, inp, final_len=args.length)
+        output = model.sample(sess, inp, final_len=512)
         for i in range(len(output)):
             output[i][0] = nm.unmap_pitch(output[i][0])
             output[i][1] = nm.unmap_dynamic(output[i][1])

@@ -79,6 +79,8 @@ class Loader:
               .format(len(self.pitches), self.num_batches),
               file=stderr)
 
+        self._bound = len(self.pitches) - self.config.seq_length - 1
+
     def convert(self, pointer, length):
         pitches = self.pitch_encoder.transform(self.pitches[pointer:(pointer + length + 1)]).toarray().tolist()
         dynamics = self.dynamic_encoder.transform(self.dynamics[pointer:(pointer + length + 1)]).toarray().tolist()
@@ -89,7 +91,7 @@ class Loader:
     def get_next_batch(self):
         ret = ([], [])
         for i in range(self.config.batch_size):
-            pointer = random.randint(0, len(self.pitches) - self.config.seq_length - 1)
+            pointer = random.randint(0, self._bound)
             ret[0].append([])
             ret[1].append([])
 
@@ -109,3 +111,19 @@ class Loader:
             ret.append(pitches[i] + dynamics[i] + rhythms[i] + durations[i])
 
         return ret
+
+    @property
+    def bound(self):
+        return self._bound
+
+    @bound.setter
+    def bound(self, value):
+        if value < 0:
+            value = len(self.pitches) - self.config.seq_length - 1 - value +1
+            if value < 0:
+                return
+        else:
+            if value > len(self.pitches) - self.config.seq_length - 1 - value:
+                return
+        self._bound = value
+
