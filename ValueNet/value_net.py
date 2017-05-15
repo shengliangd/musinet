@@ -1,10 +1,14 @@
+import sys, os
 import tensorflow as tf
-import config
-import os
+musinet_root = '/'.join(os.path.realpath(sys.argv[0]).split('/')[:-2])
+sys.path.append(musinet_root)
+from ValueNet import config
 
 
 class Model:
     def __init__(self):
+        config.init_value_net_dir(musinet_root + '/ValueNet')
+
         # NHWC format
         self.inputs = tf.placeholder(tf.float32,
                                      [None, config.seq_length, config.num_channels])
