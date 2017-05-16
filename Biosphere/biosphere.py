@@ -96,9 +96,10 @@ class Biosphere:
         It exchanges the whole notes (not distinguishing four channels)
         """
         def cross_chromosome(A, B):
-            point = random.randint(0, self.chromlen-1)
-            A_ = A[:point] + B[point:]
-            B_ = A[point:] + B[:point]
+            point1, point2 = random.randint(0, self.chromlen-1), random.randint(0, self.chromlen-1)
+            point1, point2 = min(point1, point2), max(point1, point2)
+            A_ = A[:point1] + B[point1:point2] + A[point2:]
+            B_ = B[:point1] + A[point1:point2] + B[point2:]
             return A_, B_
         next_gen = []
         prev = None
