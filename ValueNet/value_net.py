@@ -29,7 +29,7 @@ class Model:
 
         # pooling layer
         pool2_width = 4
-        pool2 = tf.nn.max_pool(tf.reshape(conv1,
+        pool2 = tf.nn.avg_pool(tf.reshape(conv1,
                                           [-1, 1,
                                            int(conv1.shape[1]),
                                            int(conv1.shape[2])]),
@@ -52,7 +52,7 @@ class Model:
 
         # pooling layer
         pool4_width = 8
-        pool4 = tf.nn.max_pool(tf.reshape(conv3,
+        pool4 = tf.nn.avg_pool(tf.reshape(conv3,
                                           [-1, 1,
                                            int(conv3.shape[1]),
                                            int(conv3.shape[2])]),
