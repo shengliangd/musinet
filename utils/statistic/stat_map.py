@@ -56,37 +56,37 @@ except EOFError:
     pass
 
 # pitches
-plt.figure(figsize=(18, 8))
+plt.figure(figsize=(10, 8))
 x = np.linspace(0, 100, 100)
-plt.plot(x, pitches, label='pitches')
-plt.title('statistics on pitches')
-plt.xlabel('pitch')
+plt.plot(x, pitches, label='pitch')
+plt.title('statistics on mapped pitches')
+plt.xlabel('mapped pitch')
 plt.ylabel('count')
 plt.show()
 
 # dynamics
-plt.figure(figsize=(18, 8))
+plt.figure(figsize=(10, 8))
 x = np.linspace(0, 100, 100)
-plt.plot(x, dynamics, label='dynamics')
-plt.title('statistics on dynamics')
-plt.xlabel('dynamic')
+plt.plot(x, dynamics, label='dynamic')
+plt.title('statistics on mapped dynamics')
+plt.xlabel('mapped dynamic')
 plt.ylabel('count')
 plt.show()
 
 # rhythms
-plt.figure(figsize=(18, 8))
+plt.figure(figsize=(10, 8))
 x = np.linspace(0, 100, 100)
-plt.plot(x, rhythms, label='rhythms')
-plt.title('statistics on rhythms')
-plt.xlabel('rhythm*100')
+plt.plot(x, rhythms, label='rhythmValue')
+plt.title('statistics on mapped rhythmValues')
+plt.xlabel('mapped rhythmValue')
 plt.ylabel('count')
 plt.show()
 
 # durations
-plt.figure(figsize=(18, 8))
+plt.figure(figsize=(10, 8))
 x = np.linspace(0, 100, 100)
-plt.plot(x, durations, label='durations')
-plt.title('statistics on durations')
-plt.xlabel('duration*100')
+plt.plot(x, durations, label='duration')
+plt.title('statistics on mapped durations')
+plt.xlabel('mapped duration')
 plt.ylabel('count')
 plt.show()
