@@ -9,9 +9,11 @@ from Biosphere.biosphere import Biosphere
 parser = ArgumentParser()
 parser.add_argument('--initial', default=os.path.join(musinet_root, 'data', 'random.pkl'))
 parser.add_argument('--output', default=os.path.join(musinet_root, 'output', 'elite.pkl'))
+parser.add_argument('--pm', type=float, default=0.01)
+parser.add_argument('--pc', type=float, default=0.1)
 args = parser.parse_args()
 
-bio = Biosphere(args.initial)
+bio = Biosphere(args.initial, pm=args.pm, pc=args.pc)
 epoch = 0
 best_fitness = 0.0
 avg_fitness = 0.0
