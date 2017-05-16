@@ -15,7 +15,7 @@ class Biosphere:
     best_fitness = 0.0
     best = 0
 
-    def __init__(self, initial_file, pop_size=1000, chromlen=512, pm=0.9, pc=0.9):
+    def __init__(self, initial_file, pop_size=1000, chromlen=512, pm=1.0, pc=0.2):
         self.pop_size = pop_size
         self.chromlen = chromlen
         self.pm = pm
@@ -123,7 +123,6 @@ class Biosphere:
 
     def result(self):
         best = self.population[self.best]
-        print(best)
         notes = []
         for note in best:
             notes.append([convert.deconvert_pitch(note[0]),
