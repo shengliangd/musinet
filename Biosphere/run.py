@@ -17,15 +17,15 @@ best_fitness = 0.0
 avg_fitness = 0.0
 while True:
     try:
-        avg_fitness, best_fitness = bio.describe()
-        print('epoch %d, avg.=%f, best=%f' % (epoch, avg_fitness, best_fitness))
         bio.select()
         bio.mutate()
         bio.crossover()
         bio.rank()
+        avg_fitness, best_fitness = bio.describe()
+        print('epoch %d, avg.=%f, best=%f' % (epoch, avg_fitness, best_fitness))
         epoch = epoch + 1
     except KeyboardInterrupt:
-        tmp = input('\noperation(q/o/(p)m/(p)c):')
+        tmp = input('\noperation(q/o/m/c/g):')
         if tmp == 'q':
             break
         elif tmp == 'o':
@@ -33,9 +33,21 @@ while True:
             with open(args.output, 'wb') as f:
                 pkl.dump(result, f)
         elif tmp == 'm':
-            pm = input('new pm:')
-            bio.pm = float(pm)
+            try:
+                pm = float(input('current pm: {0}, new pm:'.format(bio.pm)))
+            except ValueError:
+                print(':: invalid pm')
+                continue
+            except KeyboardInterrupt:
+                continue
+            bio.pm = pm
         elif tmp == 'c':
-            pc = input('new pc:')
-            bio.pc = float(pc)
-
+            try:
+                pc = float(input('current pc: {0}, new pc:'.format(bio.pc)))
+            except ValueError:
+                print(':: invalid pc')
+                continue
+            except KeyboardInterrupt:
+                continue
+            bio.pc = pc
+        continue

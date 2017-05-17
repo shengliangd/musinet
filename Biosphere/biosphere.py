@@ -5,7 +5,7 @@ import random
 from ValueNet import value_net, convert
 import math
 
-gene_len = 16
+gene_len = 8
 
 class Biosphere:
     """
@@ -17,7 +17,7 @@ class Biosphere:
     best_fitness = 0.0
     best = 0
 
-    def __init__(self, initial_file, pop_size=1000, chromlen=512, pm=0.1, pc=0.8):
+    def __init__(self, initial_file, pop_size=1000, chromlen=512, pm=0.01, pc=0.5):
         self.pop_size = pop_size
         self.chromlen = chromlen
         self.pm = pm
@@ -45,9 +45,16 @@ class Biosphere:
         """
         Rank every individual in the population
         """
+        self.best_fitness = 0.0
         self.pop_fitness = self.evaluator.evaluate(self.population)
         for i in range(len(self.pop_fitness)):
+            if self.pop_fitness[i][0] > self.best_fitness:
+                self.best_fitness = self.pop_fitness[i][0]
+                self.best = i
+        '''
+        for i in range(len(self.pop_fitness)):
             self.pop_fitness[i][0] = 1/(1+math.exp((0.5-self.pop_fitness[i][0])*12))
+        '''
 
     def mutate(self):
         """
@@ -74,11 +81,9 @@ class Biosphere:
             i = 0
             while i < self.pop_size and S + self.pop_fitness[i][0] < M:
                 S += self.pop_fitness[i][0]
-                if self.pop_fitness[i][0] > self.best_fitness:
-                    self.best = i
-                    self.best_fitness = self.pop_fitness[i][0]
                 i += 1
             return i
+
         total_fitness = np.sum(self.pop_fitness)
         selected = []
         for n in range(0, self.pop_size):
@@ -93,7 +98,7 @@ class Biosphere:
         It exchanges a piece of chromosome of length gene_len.
         """
         def cross_chromosome(A, B):
-            point = random.randint(0, self.chromlen-gene_len)
+            point = random.randint(0, self.chromlen-gene_len-1)
             A_ = A[:point] + B[point:point+gene_len] + A[point+gene_len:]
             B_ = B[:point] + A[point:point+gene_len] + B[point+gene_len:]
             return A_, B_
@@ -130,4 +135,3 @@ class Biosphere:
         part = [48, notes, self.best_fitness]
         score = [part]
         return score
-
