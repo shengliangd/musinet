@@ -33,6 +33,9 @@ while True:
             with open(args.output, 'wb') as f:
                 pkl.dump(result, f)
         elif tmp == 'm':
-            print(':: not implemented')
+            pm = input('new pm:')
+            bio.pm = float(pm)
         elif tmp == 'c':
-            print(':: not implemented')
+            pc = input('new pc:')
+            bio.pc = float(pc)
+

@@ -32,10 +32,10 @@ Biosphere使用了简单了轮盘赌算法。流程如下：
 \end{enumerate}
 
 \subsection{杂交算子}
-Biosphere使用了最简单的单点交换算法，流程如下：
+Biosphere使用了简单的两点选择交换算法，流程如下：
 \begin{enumerate}[nosep]
   \item 取种群中$P_c$比例的个体进行交配，其余个体复制到下一代
-  \item 对于任意一对个体A、B，任取位点$i$，使得A和B的染色体在该位点前后发生互换
+  \item 对于任意一对个体A、B，任取两个位点$i,j$，使得A和B的染色体恰互换$i,j$之间一段
   \item 把得到的两个新染色体放入下一代
 \end{enumerate}
 

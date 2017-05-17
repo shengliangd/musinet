@@ -34,13 +34,11 @@ class Biosphere:
         for i in range(0, self.pop_size):
             score = pkl.load(f)
             notes = score[0][1] # NOTE: will always use the first track
-            '''
             for note in notes:
                 note[0] = convert.convert_pitch(note[0])
                 note[1] = convert.convert_dynamic(note[1])
                 note[2] = convert.convert_rhythm(note[2])
                 note[3] = convert.convert_duration(note[3])
-            '''
             self.population.append(notes)
 
     def rank(self):
@@ -61,13 +59,9 @@ class Biosphere:
             point = random.randint(0, self.chromlen-1)
             individual[point][channel] = random.random()
             return individual
-        mutated_population = []
         for individual in self.population:
             if random.random() < self.pm:
-                mutated_population.append(mutate_single(individual))
-            else:
-                mutated_population.append(individual)
-        self.population = mutated_population
+                individual = mutate_single(individual)
 
     def select(self):
         """
@@ -78,9 +72,9 @@ class Biosphere:
         def next_i(M):
             S = 0.0
             i = 0
-            while S+self.pop_fitness[i][0] < M and i < self.pop_size:
+            while i < self.pop_size and S + self.pop_fitness[i][0] < M:
                 S += self.pop_fitness[i][0]
-                if self.pop_fitness[i][0] > self.best_fitness*0.8:
+                if self.pop_fitness[i][0] > self.best_fitness:
                     self.best = i
                     self.best_fitness = self.pop_fitness[i][0]
                 i += 1
@@ -96,7 +90,7 @@ class Biosphere:
     def crossover(self):
         """
         Cross over using one-point selection. Probability is @self.pc.
-        It exchanges the whole notes (not distinguishing four channels)
+        It exchanges a piece of chromosome of length gene_len.
         """
         def cross_chromosome(A, B):
             point = random.randint(0, self.chromlen-gene_len)
@@ -136,3 +130,4 @@ class Biosphere:
         part = [48, notes, self.best_fitness]
         score = [part]
         return score
+
