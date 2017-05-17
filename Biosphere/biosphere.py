@@ -5,7 +5,7 @@ import random
 from ValueNet import value_net, convert
 import math
 
-gene_len = 8
+gene_len = 16
 
 class Biosphere:
     """
@@ -48,6 +48,8 @@ class Biosphere:
         Rank every individual in the population
         """
         self.pop_fitness = self.evaluator.evaluate(self.population)
+        for i in range(len(self.pop_fitness)):
+            self.pop_fitness[i][0] = 1/(1+math.exp((0.5-self.pop_fitness[i][0])*12))
 
     def mutate(self):
         """
@@ -78,7 +80,7 @@ class Biosphere:
             i = 0
             while S+self.pop_fitness[i][0] < M and i < self.pop_size:
                 S += self.pop_fitness[i][0]
-                if self.pop_fitness[i][0] > self.best_fitness:
+                if self.pop_fitness[i][0] > self.best_fitness*0.8:
                     self.best = i
                     self.best_fitness = self.pop_fitness[i][0]
                 i += 1
@@ -88,10 +90,7 @@ class Biosphere:
         for n in range(0, self.pop_size):
             M = random.uniform(0, total_fitness)
             i = next_i(M)
-            if i >= self.pop_size:
-                selected.append(self.population[self.best])
-            else:
-                selected.append(self.population[i])
+            selected.append(self.population[i])
         self.population = selected
 
     def crossover(self):
