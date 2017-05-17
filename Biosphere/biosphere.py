@@ -3,7 +3,9 @@ import pickle as pkl
 import numpy as np
 import random
 from ValueNet import value_net, convert
+import math
 
+gene_len = 8
 
 class Biosphere:
     """
@@ -15,7 +17,7 @@ class Biosphere:
     best_fitness = 0.0
     best = 0
 
-    def __init__(self, initial_file, pop_size=1000, chromlen=512, pm=0.9, pc=0.9):
+    def __init__(self, initial_file, pop_size=1000, chromlen=512, pm=0.1, pc=0.8):
         self.pop_size = pop_size
         self.chromlen = chromlen
         self.pm = pm
@@ -32,11 +34,13 @@ class Biosphere:
         for i in range(0, self.pop_size):
             score = pkl.load(f)
             notes = score[0][1] # NOTE: will always use the first track
+            '''
             for note in notes:
                 note[0] = convert.convert_pitch(note[0])
                 note[1] = convert.convert_dynamic(note[1])
                 note[2] = convert.convert_rhythm(note[2])
                 note[3] = convert.convert_duration(note[3])
+            '''
             self.population.append(notes)
 
     def rank(self):
@@ -72,7 +76,7 @@ class Biosphere:
         def next_i(M):
             S = 0.0
             i = 0
-            while S < M and i < self.pop_size:
+            while S+self.pop_fitness[i][0] < M and i < self.pop_size:
                 S += self.pop_fitness[i][0]
                 if self.pop_fitness[i][0] > self.best_fitness:
                     self.best = i
@@ -96,9 +100,9 @@ class Biosphere:
         It exchanges the whole notes (not distinguishing four channels)
         """
         def cross_chromosome(A, B):
-            point = random.randint(0, self.chromlen-1)
-            A_ = A[:point] + B[point:]
-            B_ = A[point:] + B[:point]
+            point = random.randint(0, self.chromlen-gene_len)
+            A_ = A[:point] + B[point:point+gene_len] + A[point+gene_len:]
+            B_ = B[:point] + A[point:point+gene_len] + B[point+gene_len:]
             return A_, B_
         next_gen = []
         prev = None
@@ -123,7 +127,7 @@ class Biosphere:
 
     def result(self):
         best = self.population[self.best]
-        print(best)
+        # print(best)
         notes = []
         for note in best:
             notes.append([convert.deconvert_pitch(note[0]),

@@ -15,8 +15,8 @@ bio = Biosphere(args.initial)
 epoch = 0
 best_fitness = 0.0
 avg_fitness = 0.0
-try:
-    while avg_fitness < 0.9:
+while True:
+    try:
         avg_fitness, best_fitness = bio.describe()
         print('epoch %d, avg.=%f, best=%f' % (epoch, avg_fitness, best_fitness))
         bio.select()
@@ -24,8 +24,15 @@ try:
         bio.crossover()
         bio.rank()
         epoch = epoch + 1
-except KeyboardInterrupt:
-    print('your coffee is finished, right?')
-result = bio.result()
-with open(args.output, 'wb') as f:
-    pkl.dump(result, f)
+    except KeyboardInterrupt:
+        tmp = input('\noperation(q/o/(p)m/(p)c):')
+        if tmp == 'q':
+            break
+        elif tmp == 'o':
+            result = bio.result()
+            with open(args.output, 'wb') as f:
+                pkl.dump(result, f)
+        elif tmp == 'm':
+            print(':: not implemented')
+        elif tmp == 'c':
+            print(':: not implemented')
