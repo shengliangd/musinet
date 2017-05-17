@@ -5,7 +5,7 @@ import random
 from ValueNet import value_net, convert
 import math
 
-gene_len = 8
+gene_len = 16
 
 
 class Biosphere:
@@ -17,8 +17,9 @@ class Biosphere:
     evaluator = value_net.Model()
     best_fitness = 0.0
     best = 0
+    total_fitness = 0
 
-    def __init__(self, initial_file, pop_size=1000, chromlen=512, pm=0.01, pc=0.1):
+    def __init__(self, initial_file, pop_size=1000, chromlen=512, pm=0.0, pc=0.8):
         self.pop_size = pop_size
         self.chromlen = chromlen
         self.pm = pm
@@ -34,11 +35,13 @@ class Biosphere:
         for i in range(0, self.pop_size):
             score = pkl.load(f)
             notes = score[0][1] # NOTE: will always use the first track
+            '''
             for note in notes:
                 note[0] = convert.convert_pitch(note[0])
                 note[1] = convert.convert_dynamic(note[1])
                 note[2] = convert.convert_rhythm(note[2])
                 note[3] = convert.convert_duration(note[3])
+            '''
             self.population.append(notes)
 
     def rank(self):
@@ -49,13 +52,14 @@ class Biosphere:
         self.pop_fitness = self.evaluator.evaluate(self.population)
         '''
         # conver fitness for better perf
-        for i in range(len(self.pop_fitness)):
+        for i in range(self.pop_size):
             self.pop_fitness[i][0] = 1/(1+math.exp((0.5-self.pop_fitness[i][0])*8))
         '''
-        for i in range(len(self.pop_fitness)):
+        for i in range(self.pop_size):
             if self.pop_fitness[i][0] > self.best_fitness:
                 self.best_fitness = self.pop_fitness[i][0]
                 self.best = i
+        self.total_fitness = np.sum(self.pop_fitness)
 
     def mutate(self):
         """
@@ -72,26 +76,35 @@ class Biosphere:
             if random.random() < self.pm:
                 mutate_single(_individual)
 
+    def choose_by_fitness(self):
+        M = random.uniform(0, self.total_fitness)
+        S = 0.0
+        i = 0
+        while i < self.pop_size-1 and S + self.pop_fitness[i][0] < M:
+            S += self.pop_fitness[i][0]
+            i += 1
+        return i
+
+    def choose_by_reverse_fitness(self):
+        M = random.uniform(0, self.pop_size - self.total_fitness)
+        S = 0.0
+        i = 0
+        while i < self.pop_size-1 and S + (1-self.pop_fitness[i][0]) < M:
+            S += 1-self.pop_fitness[i][0]
+            i += 1
+        return i
+
     def select(self):
         """
         Emulate natural selection using Roulette algorithm.
         Turn current population into a mating pool.
         This also maintains best and best_fitness.
         """
-        def next_i(M):
-            S = 0.0
-            i = 0
-            while i < self.pop_size and S + self.pop_fitness[i][0] < M:
-                S += self.pop_fitness[i][0]
-                i += 1
-            return i
 
         self.rank()
-        total_fitness = np.sum(self.pop_fitness)
         selected = []
         for n in range(0, self.pop_size):
-            M = random.uniform(0, total_fitness)
-            i = next_i(M)
+            i = self.choose_by_fitness()
             selected.append(self.population[i])
         self.population = selected
 
@@ -102,26 +115,14 @@ class Biosphere:
         """
         def cross_chromosome(A, B):
             point = random.randint(0, self.chromlen-gene_len-1)
-            A_ = A[:point] + B[point:(point+gene_len)] + A[(point+gene_len):]
-            B_ = B[:point] + A[point:(point+gene_len)] + B[(point+gene_len):]
-            return A_, B_
+            return A[:point] + B[point:(point+gene_len)] + A[(point+gene_len):]
 
         self.rank()  # need this to calculate crossover prob
-        next_gen = []
-        prev = None
-        for i in range(len(self.population)):
-            individual = self.population[i]
-            if random.random() < self.pop_fitness[i]/self.best_fitness:  # better, more chance
-                if prev is None:
-                    prev = individual
-                else:
-                    next_gen.extend(cross_chromosome(prev, individual))
-                    prev = None
-            else:
-                next_gen.append(individual)
-        self.population = next_gen
-        if prev is not None:
-            self.population.append(prev)
+        for i in range(self.pop_size):
+            ind1 = self.choose_by_fitness()
+            ind2 = self.choose_by_fitness()
+            self.population[self.choose_by_reverse_fitness()] = cross_chromosome(self.population[ind1],
+                                                                                 self.population[ind2])
 
     def describe(self):
         """
