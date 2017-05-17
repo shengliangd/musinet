@@ -7,6 +7,7 @@ import math
 
 gene_len = 8
 
+
 class Biosphere:
     """
     Genetic Algorithm for Musinet
@@ -17,13 +18,12 @@ class Biosphere:
     best_fitness = 0.0
     best = 0
 
-    def __init__(self, initial_file, pop_size=1000, chromlen=512, pm=0.01, pc=0.5):
+    def __init__(self, initial_file, pop_size=1000, chromlen=512, pm=0.01, pc=0.1):
         self.pop_size = pop_size
         self.chromlen = chromlen
         self.pm = pm
         self.pc = pc
         self.load(initial_file)
-        self.rank()
 
     def load(self, path):
         """
@@ -47,14 +47,15 @@ class Biosphere:
         """
         self.best_fitness = 0.0
         self.pop_fitness = self.evaluator.evaluate(self.population)
+        '''
+        # conver fitness for better perf
+        for i in range(len(self.pop_fitness)):
+            self.pop_fitness[i][0] = 1/(1+math.exp((0.5-self.pop_fitness[i][0])*8))
+        '''
         for i in range(len(self.pop_fitness)):
             if self.pop_fitness[i][0] > self.best_fitness:
                 self.best_fitness = self.pop_fitness[i][0]
                 self.best = i
-        '''
-        for i in range(len(self.pop_fitness)):
-            self.pop_fitness[i][0] = 1/(1+math.exp((0.5-self.pop_fitness[i][0])*12))
-        '''
 
     def mutate(self):
         """
@@ -66,9 +67,10 @@ class Biosphere:
             point = random.randint(0, self.chromlen-1)
             individual[point][channel] = random.random()
             return individual
-        for individual in self.population:
+
+        for _individual in self.population:
             if random.random() < self.pm:
-                individual = mutate_single(individual)
+                mutate_single(_individual)
 
     def select(self):
         """
@@ -84,6 +86,7 @@ class Biosphere:
                 i += 1
             return i
 
+        self.rank()
         total_fitness = np.sum(self.pop_fitness)
         selected = []
         for n in range(0, self.pop_size):
@@ -99,13 +102,16 @@ class Biosphere:
         """
         def cross_chromosome(A, B):
             point = random.randint(0, self.chromlen-gene_len-1)
-            A_ = A[:point] + B[point:point+gene_len] + A[point+gene_len:]
-            B_ = B[:point] + A[point:point+gene_len] + B[point+gene_len:]
+            A_ = A[:point] + B[point:(point+gene_len)] + A[(point+gene_len):]
+            B_ = B[:point] + A[point:(point+gene_len)] + B[(point+gene_len):]
             return A_, B_
+
+        self.rank()  # need this to calculate crossover prob
         next_gen = []
         prev = None
-        for individual in self.population:
-            if random.random() < self.pc:
+        for i in range(len(self.population)):
+            individual = self.population[i]
+            if random.random() < self.pop_fitness[i]/self.best_fitness:  # better, more chance
                 if prev is None:
                     prev = individual
                 else:
@@ -121,6 +127,7 @@ class Biosphere:
         """
         Get current average of fitness and the best fitness
         """
+        self.rank()
         return np.mean(self.pop_fitness), self.best_fitness
 
     def result(self):

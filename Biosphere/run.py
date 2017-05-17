@@ -20,7 +20,6 @@ while True:
         bio.select()
         bio.mutate()
         bio.crossover()
-        bio.rank()
         avg_fitness, best_fitness = bio.describe()
         print('epoch %d, avg.=%f, best=%f' % (epoch, avg_fitness, best_fitness))
         epoch = epoch + 1
