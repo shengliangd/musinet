@@ -67,7 +67,10 @@ class Loader:
                               len(self.dynamic_encoder.active_features_),
                               len(self.rhythm_encoder.active_features_),
                               len(self.duration_encoder.active_features_)]
-
+        
+        # convert once for all
+        self.pitches, self.dynamics, self.rhythms, self.durations = self.convert(0, len(self.pitches))
+    
         config.encoders = [self.pitch_encoder,
                            self.dynamic_encoder,
                            self.rhythm_encoder,
@@ -94,8 +97,11 @@ class Loader:
             pointer = random.randint(0, self._bound)
             ret[0].append([])
             ret[1].append([])
-
-            pitches, dynamics, rhythms, durations = self.convert(pointer, self.config.seq_length)
+            
+            pitches = self.pitches[pointer:pointer+self.config.seq_length+1]
+            dynamics = self.dynamics[pointer:pointer+self.config.seq_length+1]
+            rhythms = self.rhythms[pointer:pointer+self.config.seq_length+1]
+            durations = self.durations[pointer:pointer+self.config.seq_length+1]
             for j in range(self.config.seq_length):
                 ret[0][i].append(pitches[j] + dynamics[j] + rhythms[j] + durations[j])
                 ret[1][i].append(pitches[j+1] + dynamics[j+1] + rhythms[j+1] + durations[j+1])
@@ -104,7 +110,11 @@ class Loader:
     def get_sequence(self, pointer=None, length=1024):
         if pointer is None:
             pointer = random.randint(0, len(self.pitches) - length)
-        pitches, dynamics, rhythms, durations = self.convert(pointer, length)
+
+        pitches = self.pitches[pointer:pointer+length+1]
+        dynamics = self.dynamics[pointer:pointer+length+1]
+        rhythms = self.rhythms[pointer:pointer+length+1]
+        durations = self.durations[pointer:pointer+length+1]
 
         ret = []
         for i in range(length):

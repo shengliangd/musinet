@@ -39,10 +39,9 @@ if __name__ == '__main__':
             if cost != cost:
                 print(':: cost is nan, abort')
                 exit(-1)
-            if times % loader.num_batches == 0:
-                print('epoch average cost: %.8f' % (cost / loader.num_batches))
+            if times % 15 == 0:
+                print('average cost of 15 batches: %.8f' % (cost / loader.num_batches))
                 cost = 0
-            print('epoch: %d, cost: %.8f' % (times / loader.num_batches, _cost))
             times += 1
         except KeyboardInterrupt:
             cmd = input('\noperation(w/q/c/l):')
