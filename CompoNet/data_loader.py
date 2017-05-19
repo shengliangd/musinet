@@ -94,7 +94,10 @@ class Loader:
     def get_next_batch(self):
         ret = ([], [])
         for i in range(self.config.batch_size):
-            pointer = random.randint(0, self._bound)
+            pointer = self.pointer
+            self.pointer += self.config.seq_length
+            if self.pointer >= len(self.pitches)-self.config.seq_length-1:
+                self.pointer = 0
             ret[0].append([])
             ret[1].append([])
             

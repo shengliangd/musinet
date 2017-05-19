@@ -46,7 +46,7 @@ class Config:
 
 def _sample(weights):
     threshold_high = 1.2
-    threshold_low = 1/len(weights)
+    threshold_low = 0
 
     total = 0
     for i in range(len(weights)):
@@ -138,8 +138,8 @@ class Model:
                 '''
                 for i in range(config.seq_length):
                     for j in range(config.batch_size):
-                        loss += targets[i][j]*tf.log(self.probs[i][j])
-                    self.cost = -tf.reduce_sum(loss) / config.seq_length / config.batch_size / self.vec_len
+                        loss += tf.square(targets[i][j]-self.probs[i][j])
+                    self.cost = tf.reduce_sum(loss) / config.seq_length / config.batch_size / self.vec_len / 2
 
             # optimizer
             with tf.name_scope('optimizer'):

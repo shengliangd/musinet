@@ -11,7 +11,7 @@ import os
 
 
 if __name__ == '__main__':
-    config = compo_net.Config(training=True, learning_rate=0)
+    config = compo_net.Config(training=True, learning_rate=0.0001)
     config.restore = os.path.exists(os.path.join(config.save_dir, 'checkpoint'))
     if config.restore:
         print(':: restore from saved model')
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     if config.restore:
         model.restore(sess)
     
-    input('NOTICE: initial learning rate is 0, reset after start')
+    input('NOTICE: initial learning rate is 0.0001, reset after start')
     input(':: press enter to start training')
     times = 1
     cost = 0
