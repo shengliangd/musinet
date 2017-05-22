@@ -6,13 +6,13 @@
 \fi
 
 \section{Biosphere技术细节}
-Musinet的遗传算法部分称作Biosphere（生物圈）。
+memory-lost musician的遗传算法部分称作Biosphere（生物圈）。
 
 Biosphere的基本流程与一般GA相同，即将信息编码后放在一起作为种群，
 然后依次对这个种群实施基因突变、选择复制、交配得到下一代。
 
 \subsection{信息表示}
-Musinet把一个乐谱表示为如下Python数据结构：
+memory-lost musician把一个乐谱表示为如下Python数据结构：
 \begin{lstlisting}
 note = [pitch, dynamic, rhythm, duration]
 notes = [note]
