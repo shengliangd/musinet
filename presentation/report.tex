@@ -1,0 +1,70 @@
+\documentclass{article}
+\usepackage{ctex, graphicx, float, listings, enumitem, url, fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\bfseries \thepage}
+\fancyhead[C]{新生研讨课报告－－机器作曲}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\includeonly{Investigation, CompoNet, ValueNet, Toolchain, Biosphere}
+\title{新生研讨课报告－－机器作曲}
+\author{邓胜亮\and 马凯\and 戈惊宇\and 郭金涛}
+\def\allfiles{}
+
+\begin{document}
+\begin{titlepage}
+\centering
+\vspace*{\stretch{1}}
+{\fontsize{40}{50} 机器作曲研究报告}\\
+\vspace{\stretch{1}}
+{\Large 邓胜亮\quad 马凯\quad 戈惊宇\quad 郭金涛}\\
+\vspace{\stretch{3}}
+{\today}
+\end{titlepage}
+
+\paragraph{摘要}
+我们尝试利用深度学习技术以及遗传算法进行机器自动作曲，以lstm网络为基础构建模型训练了用于作曲的神经网络和用于对音符序列进行评分的神经网络，并使用后者结合遗传算法进行作曲。
+\paragraph{关键词} 神经网络；遗传算法；作曲
+
+\newpage
+\renewcommand{\contentsname}{目录}
+\tableofcontents
+
+\newpage
+\section{引言}
+从远古时代开始直到如今，音乐贯穿了人类文明的历史，是人类用来表达情感，抒发志趣的有力工具。而善于作曲的人，往往因此而拥有一定的社会地位，被认为有着天赋的才能。于是音乐被视为了上帝的礼物，成为寄托着人类灵性的艺术。因此，普遍的看法是，音乐作为艺术，是难以由机器完成创作的。借着中国科大新生科学与社会研讨课的契机，我们小组萌生出了尝试研究机器自动作曲的想法，四人一拍即合，开始进行了尝试。本文描述了我们进行探讨的过程，并给出了我们所做的工作的相关细节，项目的全部源代码在我们的\cite{musinet}。
+\section{进程}
+    \subsection{提出}
+    在寒假中对大数据与数据挖掘进行调研的过程中，小组成员初步了解了关于数据挖掘的相关知识。在此过程中喜好音乐的马凯同学首先提出了研究机器自动作曲的想法，小组成员表示对此很感兴趣，经过讨论之后确定了这一题目。
+    \subsection{初步尝试}
+    在确定这一题目后，我们经过讨论大致理清了思路。首先，考虑到音乐文件的多种格式，我们决定用较为规整、易于处理的mid文件作为训练数据来源和生成的格式。然后我们简单修改了\cite{char-rnn}训练了一个作曲网络，基本思路是根据之前的音符序列预测下一个音符。输入一些音符就可以得到一首曲子。
+
+    初步尝试前，我们编写了爬虫收集到大约2000个mid文件，完成了网络上有关信息的收集、了解了世界上已有的一些在研究机器自动作曲的团队的思路、成果和遇到的问题，并完成了模型的初步构建。
+
+    在此次尝试中，我们利用软件\cite{jmusic}对mid文件进行初步处理，得到由不同音轨多个note组成的xml文件，每个note包含四个要素：pitch，dynamic，rhythmValue，duration。由于jmusic文件说明的缺失，我们并不完全清楚这四个要素的含义，于是先选取了可能代表音高和持续时间的rhythmValue和duration构建二维向量。将前述向量简单处理为字节序列作为训练数据输入模型进行训练。训练出作曲网络后，我们用人工输入的音符作为初始音符生成了一些片段。
+
+    在结果中，我们不时能听到一小段悦耳的音乐，但是大多数时候都是缺乏基本乐理的混乱音符。初次尝试的主要收获是验证了工具链的可用性。初次尝试的结果虽然不佳，但是我们产生了一些新的想法，例如将训练数据进一步处理、寻找主音轨、转换方向利用遗传算法进行研究等。
+    \subsection{反复修改}
+    初步尝试结束之后，我们进行了更多的细化工作，比如完善工具链、收集更多数据等。同时，我们根据初步尝试的结果与新想法完成了一些工作。在这段时间里，我们通过尝试，弄清了四个要素的含义，并借助于此，绕开寻找主音轨的困难直接处理多音轨的音乐。
+
+    在此次尝试中，我们将多音轨重排成顺序排列的音符，将四个音符要素进行one-hot编码，再连接成一个向量作为神经网络的输入。效果见\ref{result_of_CompoNet}。
+    \subsection{想法的突破与实现的失败}
+    此前的模型使用均方差或\cite{交叉熵}作为损失函数，其本质上都是在让神经网络的输出更接近已经有的音乐。随着工作的推进，我们慢慢感到其不足之处。于是我们产生了一个新想法－－能不能训练出一个专门用来打分的神经网络，并基于它设计损失函数？有了这样一个用于打分的模型，我们能更好的告诉机器“什么是音乐”，能够在曲风和情感上进行选择，最关键的是能够让机器从原本的模仿改变成真正的创作。于是我们基于卷积神经网络实现了一个评分网络。实现之后我们发现，技术上似乎做不到将神经网络的输出作为损失函数（和求梯度、随机取样过程有关），于是我们将这个神经网络用在了遗传算法的适应度评估中。
+
+\include{Investigation}
+\include{Toolchain}
+\include{CompoNet}
+\include{ValueNet}
+\include{Biosphere}
+
+\section{总结}
+虽然我们的成果并不太好，CompoNet产生的比较好听的音符序列几乎是在背诵训练数据，ValueNet并不能真正地识别音乐，Biosphere受到ValueNet的限制在随机初始种群的条件下筛选出的高分“音乐”其实没法听，但在这次尝试中，我们所有人都得到了团队合作能力和解决问题能力的提高，也学到了许多关于机器学习、数据挖掘方面的知识，收获很大。
+
+\begin{thebibliography}{}
+\bibitem[github仓库]{musinet} \url{https://github.com/faultrit/musinet}
+\bibitem[char-rnn]{char-rnn} \url{https://github.com/karpathy/char-rnn}
+\bibitem[jmusic]{jmusic} \url{http://explodingart.com/jmusic/}
+\bibitem[交叉熵]{交叉熵} \url{https://en.wikipedia.org/wiki/Cross_entropy}
+\end{thebibliography}
+
+\end{document}

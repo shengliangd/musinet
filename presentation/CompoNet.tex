@@ -25,7 +25,7 @@
     我们对输入的四个要素先分别进行one-hot编码，再连接成一个向量作为神经网络的输入。
 
   \subsection{结构和训练}
-    我们模仿char-rnn-tensorflow构建了一个两层、每层128个神经元的递归神经网络，在输出处增加了一个隐层
+    我们模仿\cite{char-rnn-tensorflow}构建了一个两层、每层128个神经元的递归神经网络，在输出处增加了一个隐层
     将其输出变换为和输入向量相同的长度，然后拆分为四个部分，对每部分计算softmax，
     得到音符的每个要素所有取值的概率分布，然后将其与下一个音符的one-hot编码计算交叉熵作为
     损失函数。
@@ -39,6 +39,10 @@
     \item 当神经网络规模为2层，每层128个神经元时，使用6首左右不太复杂的曲子，会将它们背下来；曲子数目显著增多时在可忍受的训练时间内只能输出无规律的音符序列。
     \item 如果再增大神经网络规模，还需要更多的数据来进行训练，这会显著增加对机器的要求（主要是内存大小；时间换空间很不划算）和训练所需时间，因此我们暂时做不到。
     \end{itemize}
+    
+\begin{thebibliography}{}
+\bibitem[char-rnn-tensorflow]{char-rnn-tensorflow} \url{https://github.com/sherjilozair/char-rnn-tensorflow}
+\end{thebibliography}
 
 \ifx \allfiles \undefined
 \end{document}
