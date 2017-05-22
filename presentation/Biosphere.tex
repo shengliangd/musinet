@@ -27,19 +27,31 @@ Biosphere使用了简单了轮盘赌算法。流程如下：
 \begin{enumerate}[nosep]
   \item 将每个个体的适应度相加得到$T$
   \item 任取$[0,T]$之间的随机数$M$
-  \item 令$S$等于前$i$个个体的适应度，且$S$是恰好不小于$M$
+  \item 令$S$等于前$i$个个体的适应度，且$S$恰好不小于$M$
   \item 把第$i$个个体放入交配池
 \end{enumerate}
 
 \subsection{杂交算子}
-Biosphere使用了简单的两点选择交换算法，流程如下：
+Biosphere使用了简单的单点片段交换算法，流程如下：
 \begin{enumerate}[nosep]
   \item 取种群中$P_c$比例的个体进行交配，其余个体复制到下一代
-  \item 对于任意一对个体A、B，任取两个位点$i,j$，使得A和B的染色体恰互换$i,j$之间一段
+  \item 对于任意一对个体A、B，任取一个位点$i$，使得A和B的染色体恰互换$i,i+\mathrm{gene\_len}$之间一段
   \item 把得到的两个新染色体放入下一代
 \end{enumerate}
 
 \subsection{效果评估}
-% TODO
+经过多轮测试、试听多个产生的ValueNet认为足够好（适应度 > 0.9）的曲子后，我们发现生成的效果不好：和随机产生的曲子差别不大。
+GA方法基本是失败的。
+
+可能的原因：
+\begin{enumerate}[nosep]
+  \item 参数$P_m,P_c$设置不当，导致种群不能稳定收敛
+  \item 选择算法过分简单，不能保存优良基因、淘汰不良基因
+  \item 杂交算法未充分考虑音乐特性，不能有效交换优良基因
+  \item ValueNet不能真正把好音乐选出来
+\end{enumerate}
+
+我们就以上原因进行了改进实验（如将杂交算法的交换片段改为高分片段覆盖低分片段，但最后一点原因暂未有解决方案），
+但均未获得良好效果。推测是以上原因中一个或多个导致搜索效率过低，或者无法收敛到我们寻求的音乐。
 
 \end{document}
