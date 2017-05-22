@@ -1,6 +1,9 @@
+\ifx\allfiles\undefined
 \documentclass{article}
 \usepackage{graphicx, ctex, float}
 \begin{document}
+\fi
+
   \section{ValueNet简介}  
   \subsection{功能}
     对一段给定的音符序列打分，衡量其是“我们所倾向的音乐”的程度。
@@ -68,4 +71,7 @@
   \subsection{反思}
     我们在遗传算法中使用训练好的神经网络进行适应度的评估，以随机种群开始得到的0.9分以上的音符序列，听上去其实和随机的差不多；以现有的一些音乐作为初始种群得到的结果。这说明ValueNet的实现是失败的，它也许找到了音乐的“宏观特点”，但没有抓住音乐的微观特点。
     事实上，如果我们使用另外一些随机序列去测试评分网络，应该可以提前发现这个问题，但将之投入使用只需要很小的工作量，在使用中看效果就可以了，于是没有进行测试。
+
+\ifx\allfiles\undefined
 \end{document}
+\fi

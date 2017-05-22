@@ -1,5 +1,9 @@
+\ifx \allfiles \undefined
 \documentclass{article}
-  \usepackage{ctex, graphicx, float}\begin{document}
+  \usepackage{ctex, graphicx, float}
+  \begin{document}
+\fi
+
   \section{CompoNet结构说明}
   \subsection{功能}
     接受一段音符序列，对其进行“续写”。
@@ -28,9 +32,14 @@
   \subsection{取样}
     在取样时，我们对四个要素分别进行取样。如前所述，神经网络给出了下一个音符四个要素的每种取值的概率，为了提高输出的质量，我们只考虑概率大小在平均值以上的可能取值。
   \subsection{效果}
+  \label{result_of_CompoNet}
     我们做了多组实验，情况大致如下：
     \begin{itemize}
     \item 当神经网络规模为2层，每层64个神经元时，即使只使用一首曲子训练，神经网络也无法输出有规律的音符序列；
-    \item 当神经网络规模为2层，每层128个神经元时，使用6首左右不太复杂的曲子，会将它们背下来；曲子数目显著增多时在可忍受的训练时间内只输出无规律的音符序列。
+    \item 当神经网络规模为2层，每层128个神经元时，使用6首左右不太复杂的曲子，会将它们背下来；曲子数目显著增多时在可忍受的训练时间内只能输出无规律的音符序列。
+    \item 如果再增大神经网络规模，还需要更多的数据来进行训练，这会显著增加对机器的要求（主要是内存大小；时间换空间很不划算）和训练所需时间，因此我们暂时做不到。
     \end{itemize}
+
+\ifx \allfiles \undefined
 \end{document}
+\fi
